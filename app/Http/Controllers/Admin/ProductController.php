@@ -12,9 +12,23 @@ use Illuminate\Support\Facades\DB; // Penting untuk Data Integrity
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category', 'variants')->latest()->get();
+        $q = trim((string) $request->query('q', ''));
+
+        $products = Product::query()
+            ->with(['category', 'variants', 'images'])
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($sub) use ($q) {
+                    $sub
+                        ->where('name', 'like', "%{$q}%")
+                        ->orWhere('slug', 'like', "%{$q}%");
+                });
+            })
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
         return view('admin.products.index', compact('products'));
     }
 
@@ -59,6 +73,7 @@ class ProductController extends Controller
                     $files = [$files];
                 }
 
+                $sortOrder = 0;
                 foreach ($files as $image) {
                     // FILTER WAJIB:
                     // 1. Pastikan $image adalah object UploadedFile (bukan array kosong {})
@@ -67,8 +82,10 @@ class ProductController extends Controller
                         try {
                             $path = $image->store('products', 'public');
                             $product->images()->create([
-                                'image' => $path
+                                'image' => $path,
+                                'sort_order' => $sortOrder,
                             ]);
+                            $sortOrder++;
                         } catch (\Exception $e) {
                             // Jika 1 gambar gagal, skip saja, jangan batalkan semua
                             \Illuminate\Support\Facades\Log::error("Gagal upload gambar: " . $e->getMessage());
@@ -129,6 +146,8 @@ class ProductController extends Controller
             'description'      => 'required|string',
             'images'           => 'nullable|array',
             'images.*'         => 'image|mimes:jpeg,png,jpg,webp|max:5120',
+            'image_order'      => 'nullable|array',
+            'image_order.*'    => 'integer',
             'variants'         => 'required|array|min:1',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'required|numeric|min:0',
@@ -161,13 +180,37 @@ class ProductController extends Controller
             }
 
             // 3. Tambah Gambar Baru
+            // 3a. Simpan urutan existing images (jika dikirim dari UI)
+            if ($request->filled('image_order')) {
+                $orderIds = array_values(array_filter($request->image_order, fn ($v) => is_numeric($v)));
+                $orderIndex = 0;
+                foreach ($orderIds as $imgId) {
+                    $image = $product->images()->find($imgId);
+                    if ($image) {
+                        $image->update(['sort_order' => $orderIndex]);
+                        $orderIndex++;
+                    }
+                }
+
+                // Re-append any remaining images not in the list
+                $remaining = $product->images()->whereNotIn('id', $orderIds)->orderBy('sort_order')->orderBy('id')->get();
+                foreach ($remaining as $image) {
+                    $image->update(['sort_order' => $orderIndex]);
+                    $orderIndex++;
+                }
+            }
+
+            // 3b. Tambah gambar baru (dengan sort_order setelah yang existing)
             if ($request->hasFile('images')) {
+                $nextOrder = (int) ($product->images()->max('sort_order') ?? -1) + 1;
                 foreach ($request->file('images') as $image) {
                     if ($image->isValid()) {
                         $path = $image->store('products', 'public');
                         $product->images()->create([
-                            'image' => $path
+                            'image' => $path,
+                            'sort_order' => $nextOrder,
                         ]);
+                        $nextOrder++;
                     }
                 }
             }

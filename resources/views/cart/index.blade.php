@@ -1,201 +1,248 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 py-12 font-sans text-gray-900">
-        {{-- HEADER --}}
-        <h1 class="text-2xl md:text-3xl font-bold mb-8 uppercase tracking-widest border-b border-gray-900 pb-4">
-            Keranjang Belanja <span class="text-gray-500 text-lg font-normal ml-2">({{ collect($cart)->sum('qty') }}
-                item)</span>
-        </h1>
+    <style>
+        .glossy-pink {
+            background: linear-gradient(180deg, #ff5e84 0%, #f42559 100%);
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), 0 4px 12px rgba(244, 37, 89, 0.3);
+        }
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        .candy-stripe {
+            background-color: #ffffff;
+            background-image: repeating-linear-gradient(45deg, #fffcfd, #fffcfd 10px, #fff1f4 10px, #fff1f4 20px);
+        }
 
-            {{-- LEFT COLUMN: CART ITEMS --}}
-            <div class="lg:col-span-8">
-                <div class="w-full">
-                    {{-- Table Header (Hidden on mobile) --}}
+        .bubbly-border {
+            border: 3px solid #f42559;
+        }
+    </style>
+    <main class="flex-1 max-w-[1280px] mx-auto w-full px-6 py-8">
+        <div class="flex items-center gap-2 mb-6">
+            <a class="text-primary/60 text-sm font-semibold hover:text-primary transition-colors"
+                href="{{ route('home') }}">Home</a>
+            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
+            <span class="text-primary text-sm font-extrabold">Your Sweet Cart</span>
+        </div>
+
+        <div class="flex items-center gap-3 mb-8">
+            <h1 class="text-3xl font-extrabold text-[#181113] dark:text-white">Your Shopping Cart</h1>
+            <span class="text-primary/50 text-xl font-bold">({{ collect($cart)->sum('qty') }} items)</span>
+            <span class="material-symbols-outlined text-primary animate-pulse">favorite</span>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-10">
+            <div class="flex-1 space-y-6">
+                @forelse ($cart as $item)
                     <div
-                        class="hidden md:grid grid-cols-12 gap-4 text-xs font-bold uppercase text-gray-500 mb-4 tracking-wider">
-                        <div class="col-span-6">Produk</div>
-                        <div class="col-span-3 text-center">Jumlah</div>
-                        <div class="col-span-3 text-right">Subtotal</div>
-                    </div>
+                        class="bubbly-border bg-white dark:bg-[#2d1a1e] rounded-xl p-6 shadow-xl flex flex-col sm:flex-row gap-6 items-center">
+                        {{-- Product Image --}}
+                        <div class="w-32 h-32 bg-center bg-no-repeat bg-cover rounded-xl shrink-0"
+                            style='background-image: url("{{ $item['image'] ? asset('storage/' . $item['image']) : 'https://lh3.googleusercontent.com/aida-public/AB6AXuBYE3_laJfR0Z7-ogZu_ZEV9oon6E7ikAKkPb97Ij5f4BWlw171zeoh9iRVpr2n5MCD7FX7Da55l8_fcUsbsnllSroBxlLggDnIwr6dhp2g7SkPuUFdSQHrIBN_PhaRCBLgMewCZcX_1dBb7E_tnZ59F7eXWU4fMK65KaNulooM6dhuXmnrEgsFTYPr0UvVjZjHyq3AKF4JAd6VRy_UACvMOrjDWvBDW8bIh43DOr9IVxpfVjxWDBc9IQfc5frVh0yduPfohGhWzLI' }}");'>
+                        </div>
 
-                    @forelse ($cart as $item)
-                        <div class="border-t border-gray-200 py-6 group">
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-
-                                {{-- Product Info --}}
-                                <div class="md:col-span-6 flex gap-4">
-                                    {{-- Placeholder Image (Uniqlo style always has images, consider adding one if available) --}}
-                                    {{-- GANTI BAGIAN PLACEHOLDER 'IMG' DENGAN KODE INI --}}
-                                    <div class="w-20 h-20 flex-shrink-0 border border-gray-200 bg-white">
-                                        @if (!empty($item['image']))
-                                            <img src="{{ asset('storage/' . $item['image']) }}"
-                                                alt="{{ $item['product_name'] }}" class="w-full h-full object-cover">
-                                        @else
-                                            {{-- Fallback jika produk tidak punya gambar --}}
-                                            <div
-                                                class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                                                <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                                    </path>
-                                                </svg>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-gray-900 uppercase tracking-wide text-sm md:text-base">
-                                            {{ $item['product_name'] }}</h3>
-                                        <p class="text-gray-500 text-xs mt-1">ID Variant: {{ $item['variant_id'] }}</p>
-                                        <p class="text-gray-900 font-medium mt-2">Rp {{ number_format($item['price']) }}</p>
-
-                                        {{-- Remove Button (Mobile only) --}}
-                                        <form action="{{ route('cart.remove', $item['variant_id']) }}" method="POST"
-                                            class="md:hidden mt-3">
-                                            @csrf @method('DELETE')
-                                            <button
-                                                class="text-xs text-gray-400 underline hover:text-red-600 uppercase tracking-wider">Hapus</button>
-                                        </form>
-                                    </div>
+                        <div class="flex flex-col flex-1 gap-2 w-full">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-primary text-xs font-bold uppercase tracking-widest">Sweet
+                                        Choice</span>
+                                    <h3 class="text-xl font-extrabold text-[#181113] dark:text-white uppercase">
+                                        {{ $item['product_name'] }}</h3>
+                                    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Variant ID:
+                                        {{ $item['variant_id'] }}</p>
                                 </div>
+                                <span class="text-2xl font-extrabold text-primary">Rp
+                                    {{ number_format($item['price']) }}</span>
+                            </div>
 
-                                {{-- Quantity Selector --}}
-                                <div class="md:col-span-3 flex justify-start md:justify-center">
-                                    <form action="{{ route('cart.update') }}" method="POST"
-                                        class="flex items-center border border-gray-300">
-                                        @csrf
-                                        <input type="hidden" name="variant_id" value="{{ $item['variant_id'] }}">
-                                        <button name="qty" value="{{ $item['qty'] - 1 }}"
-                                            class="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition text-xl font-light">−</button>
-                                        <span
-                                            class="w-12 h-10 flex items-center justify-center font-bold text-sm border-x border-gray-300">{{ $item['qty'] }}</span>
-                                        <button name="qty" value="{{ $item['qty'] + 1 }}"
-                                            class="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition text-xl font-light">+</button>
-                                    </form>
-                                </div>
+                            <div class="flex items-center justify-between mt-4">
+                                <form action="{{ route('cart.update') }}" method="POST"
+                                    class="flex items-center gap-3 bg-primary/5 p-2 rounded-full">
+                                    @csrf
+                                    <input type="hidden" name="variant_id" value="{{ $item['variant_id'] }}">
 
-                                {{-- Subtotal & Desktop Remove --}}
-                                <div class="md:col-span-3 text-right">
-                                    <p class="font-bold text-gray-900 text-lg">Rp
-                                        {{ number_format($item['price'] * $item['qty']) }}</p>
-                                    <form action="{{ route('cart.remove', $item['variant_id']) }}" method="POST"
-                                        class="hidden md:block mt-2">
-                                        @csrf @method('DELETE')
-                                        <button
-                                            class="text-xs text-gray-400 underline hover:text-red-600 uppercase tracking-wider">Hapus</button>
-                                    </form>
-                                </div>
+                                    {{-- Decrease Qty --}}
+                                    <button name="qty" value="{{ $item['qty'] - 1 }}"
+                                        class="w-8 h-8 rounded-full bg-white shadow-sm border border-primary/20 text-primary font-black hover:scale-110 transition-transform active:scale-90 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-sm">remove</span>
+                                    </button>
+
+                                    <span
+                                        class="text-lg font-bold text-[#181113] dark:text-white px-2">{{ $item['qty'] }}</span>
+
+                                    {{-- Increase Qty --}}
+                                    <button name="qty" value="{{ $item['qty'] + 1 }}"
+                                        class="w-8 h-8 rounded-full bg-primary text-white shadow-sm font-black hover:scale-110 transition-transform active:scale-90 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-sm">add</span>
+                                    </button>
+                                </form>
+
+                                {{-- Remove Button --}}
+                                <form action="{{ route('cart.remove', $item['variant_id']) }}" method="POST">
+                                    @csrf @method('DELETE')
+                                    <button type="submit"
+                                        class="flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors font-bold text-sm">
+                                        <span class="material-symbols-outlined text-lg">delete</span>
+                                        Remove
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                    @empty
-                        <div class="py-16 text-center bg-gray-50 border border-gray-100">
-                            <p class="text-gray-500 mb-4 text-sm uppercase tracking-wide">Keranjang Anda saat ini kosong.
-                            </p>
-                            <a href="{{ route('home') }}"
-                                class="inline-block bg-black text-white px-8 py-3 text-sm font-bold uppercase tracking-widest hover:opacity-80 transition">
-                                Lanjut Belanja
-                            </a>
-                        </div>
-                    @endforelse
-                </div>
-
-                {{-- Back to shop link --}}
-                @if (count($cart) > 0)
-                    <div class="mt-8">
-                        <a href="{{ route('home') }}"
-                            class="text-sm font-bold underline hover:text-gray-600 uppercase tracking-wide">← Kembali
-                            Berbelanja</a>
                     </div>
+                @empty
+                    <div class="text-center py-20 bg-primary/5 rounded-3xl border-2 border-dashed border-primary/20">
+                        <span class="material-symbols-outlined text-6xl text-primary/30 mb-4">shopping_basket</span>
+                        <p class="text-gray-500 font-bold uppercase tracking-widest">Your cart is feeling a bit empty...</p>
+                        <a href="{{ route('home') }}"
+                            class="inline-block mt-6 bg-primary text-white px-10 py-4 rounded-full font-black hover:scale-105 transition-transform">START
+                            SHOPPING</a>
+                    </div>
+                @endforelse
+
+                @if (count($cart) > 0)
+                    <a class="flex items-center justify-center gap-2 mt-8 text-primary font-black hover:underline group"
+                        href="{{ route('home') }}">
+                        <span
+                            class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                        Back to Candy Shop
+                    </a>
                 @endif
             </div>
 
+            <div class="w-full lg:w-96">
+                <div
+                    class="candy-stripe dark:candy-stripe dark:invert-[0.05] rounded-xl bubbly-border shadow-2xl p-8 flex flex-col gap-6 sticky top-28">
+                    <div class="flex items-center gap-2 border-b-2 border-dashed border-primary/20 pb-4">
+                        <span class="material-symbols-outlined text-primary text-3xl">shopping_cart_checkout</span>
+                        <h2 class="text-2xl font-black text-[#181113]">Treat Summary</h2>
+                    </div>
 
-            {{-- RIGHT COLUMN: SUMMARY --}}
-            <div class="lg:col-span-4">
-                <div class="bg-gray-50 p-6 sticky top-6 border border-gray-100">
-                    <h2 class="font-bold text-lg uppercase tracking-widest mb-6 border-b border-gray-300 pb-2">Ringkasan
-                        Pesanan</h2>
-
-                    {{-- PILIH ALAMAT --}}
-                    <div class="mb-6">
-                        <label class="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Alamat
-                            Pengiriman</label>
+                    {{-- Address Selector --}}
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-primary">Shipping To:</label>
                         <div class="relative">
                             <select id="addressSelector"
-                                class="w-full appearance-none bg-white border border-gray-300 text-gray-900 text-sm p-3 pr-8 focus:outline-none focus:border-black rounded-none">
-                                <option value="">-- PILIH ALAMAT --</option>
+                                class="w-full appearance-none bg-white/50 border-2 border-primary/10 rounded-xl px-4 py-3 text-sm font-bold focus:ring-primary focus:border-primary outline-none">
+                                <option value="">-- SELECT ADDRESS --</option>
                                 @foreach ($addresses as $addr)
-                                    <option value="{{ $addr->id }}">
-                                        {{ $addr->name }} ({{ $addr->city }})
+                                    <option value="{{ $addr->id }}">{{ $addr->name }} ({{ $addr->city }})
                                     </option>
                                 @endforeach
                             </select>
-                            <div
-                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                </svg>
-                            </div>
+                            <span
+                                class="material-symbols-outlined absolute right-3 top-3 text-primary pointer-events-none">expand_more</span>
                         </div>
-
-                        <div class="mt-3 text-right">
+                        <div class="flex justify-end">
                             @php
                                 $routeAdd = auth()->user()->hasRole('admin')
                                     ? route('admin.addresses.create')
                                     : route('user.addresses.create');
                             @endphp
-                            <a href="{{ $routeAdd }}"
-                                class="text-xs font-bold text-black underline hover:text-gray-600 uppercase tracking-wide">
-                                + Alamat Baru
-                            </a>
+                            <a href="{{ $routeAdd }}" class="text-[10px] font-black text-primary underline">+ NEW
+                                ADDRESS</a>
                         </div>
                     </div>
 
-                    {{-- Summary Details --}}
-                    <div class="space-y-3 mb-8 text-sm">
-                        <div class="flex justify-between text-gray-600">
-                            <span>Subtotal Barang</span>
-                            <span>{{ collect($cart)->sum('qty') }} items</span>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-[#181113] font-semibold">
+                            <span>Items Total</span>
+                            <span>Rp {{ number_format(collect($cart)->sum(fn($i) => $i['price'] * $i['qty'])) }}</span>
                         </div>
-                        <div class="flex justify-between text-gray-600">
-                            <span>Biaya Pengiriman</span>
-                            <span class="text-xs italic">Dihitung saat checkout</span>
-                        </div>
-                        <div
-                            class="flex justify-between text-xl font-bold text-gray-900 pt-4 border-t border-gray-300 mt-4">
-                            <span class="uppercase">Total</span>
-                            <span class="text-red-600">Rp
-                                {{ number_format(collect($cart)->sum(fn($i) => $i['price'] * $i['qty'])) }}</span>
+                        <div class="flex justify-between items-center text-primary font-bold">
+                            <span>Delivery</span>
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">local_shipping</span> FREE
+                            </span>
                         </div>
                     </div>
 
-                    {{-- Checkout Button --}}
-                    {{-- Checkout Button --}}
-                    <button id="payButton" type="button"
-                        class="w-full bg-red-600 hover:bg-red-700 text-white py-4 font-bold text-sm uppercase tracking-widest transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-none"
-                        {{ empty($cart) ? 'disabled' : '' }}>
-                        Bayar Sekarang
+                    <div class="border-t-2 border-dashed border-primary/20 pt-6">
+                        <div class="flex justify-between items-end">
+                            <span class="text-lg font-bold text-[#181113]">Total Price</span>
+                            <div class="flex flex-col items-end">
+                                <div class="flex items-center gap-1 text-primary">
+                                    <span class="material-symbols-outlined text-xs">favorite</span>
+                                    <span class="text-3xl font-black tracking-tight">
+                                        Rp {{ number_format(collect($cart)->sum(fn($i) => $i['price'] * $i['qty'])) }}
+                                    </span>
+                                    <span class="material-symbols-outlined text-xs">favorite</span>
+                                </div>
+                                <span class="text-[10px] font-bold text-primary uppercase">Tax Included</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="payButton" type="button" {{ empty($cart) ? 'disabled' : '' }}
+                        class="glossy-pink w-full py-5 rounded-full text-white text-xl font-black tracking-wide flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 group shadow-lg disabled:opacity-50">
+                        <span
+                            class="material-symbols-outlined text-3xl group-hover:rotate-45 transition-transform">icecream</span>
+                        PROCEED TO CHECKOUT
                     </button>
 
-                    {{-- Trust Badges / Info --}}
-                    <div class="mt-6 border-t border-gray-200 pt-4">
-                        <p class="text-xs text-gray-500 leading-relaxed">
-                            * Pajak sudah termasuk dalam harga yang ditampilkan.<br>
-                            * Pengembalian barang maksimal 30 hari.
-                        </p>
+                    <div class="flex flex-col items-center gap-2 text-primary/60 font-bold text-xs text-center">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined">verified_user</span>
+                            <span>Sweet & Secure Payment</span>
+                        </div>
                     </div>
                 </div>
             </div>
-
         </div>
-    </div>
+
+        <div class="mt-20">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-black text-[#181113] dark:text-white">You Might Also Crave...</h2>
+                <a class="text-primary font-bold text-sm" href="{{ route('shop.index') }}">View all snacks →</a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                @forelse (($recommendedProducts ?? collect()) as $p)
+                    @php
+                        $img = $p->images->first();
+                        $minPrice = $p->variants_min_price ?? $p->variants?->min('price');
+                    @endphp
+
+                    <a href="{{ route('product.show', $p->slug) }}"
+                        class="group bg-white dark:bg-[#2d1a1e] rounded-xl p-4 shadow-md hover:shadow-xl transition-all border-b-4 border-primary/20 hover:border-primary">
+                        <div class="aspect-square bg-center bg-no-repeat bg-cover rounded-xl mb-4 group-hover:scale-105 transition-transform"
+                            @if ($img)
+                                style='background-image: url("{{ asset('storage/' . ltrim($img->image, '/')) }}")'
+                            @else
+                                style='background-image: radial-gradient(circle at top, rgba(244,37,89,0.25), rgba(255,143,177,0.08)), linear-gradient(135deg, rgba(244,37,89,0.12), rgba(255,255,255,0.0))'
+                            @endif
+                        >
+                        </div>
+
+                        <h4 class="font-bold text-[#181113] dark:text-white mb-1 line-clamp-2">{{ $p->name }}</h4>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-primary font-black">
+                                @if (is_null($minPrice))
+                                    —
+                                @else
+                                    Rp {{ number_format($minPrice, 0, ',', '.') }}
+                                @endif
+                            </span>
+                            <span
+                                class="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                                <span class="material-symbols-outlined text-sm">open_in_new</span>
+                            </span>
+                        </div>
+                    </a>
+                @empty
+                    <div class="col-span-full text-center text-gray-500 font-bold">
+                        Tambahkan produk dulu untuk melihat rekomendasi sesuai kategori.
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </main>
 
     {{-- MIDTRANS SNAP JS --}}
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('services.midtrans.clientKey') }}">
-    </script>
+    @php
+        $snapJsUrl = config('services.midtrans.isProduction')
+            ? 'https://app.midtrans.com/snap/snap.js'
+            : 'https://app.sandbox.midtrans.com/snap/snap.js';
+    @endphp
+    <script src="{{ $snapJsUrl }}" data-client-key="{{ config('services.midtrans.clientKey') }}"></script>
 
     <script>
         document.getElementById('payButton')?.addEventListener('click', function(e) {
@@ -203,15 +250,15 @@
             const addressId = document.getElementById('addressSelector').value;
 
             if (!addressId) {
-                alert('Mohon pilih alamat pengiriman terlebih dahulu!');
+                (window.__showToast || window.showToast || function(m){ console.warn(m); })('Please select the shipping address first.', 'error');
                 return;
             }
 
             const btn = this;
             const originalText = btn.innerHTML;
-            btn.innerHTML = `MEMPROSES...`;
+            btn.innerHTML =
+                `<span class="animate-spin material-symbols-outlined">progress_activity</span> PROCESSING...`;
             btn.disabled = true;
-            btn.classList.add('opacity-75');
 
             fetch("{{ route('checkout.store') }}", {
                     method: "POST",
@@ -232,30 +279,27 @@
                 .then(data => {
                     snap.pay(data.snap_token, {
                         onSuccess: function(result) {
-                            window.location.href = '/';
+                            window.location.href = data.order_url;
                         },
                         onPending: function(result) {
-                            alert("Menunggu pembayaran...");
-                            location.reload();
+                            window.location.href = data.order_url;
                         },
                         onError: function(result) {
-                            alert("Pembayaran gagal!");
-                            resetButton();
+                            window.location.href = data.order_url;
                         },
                         onClose: function() {
-                            resetButton();
+                            window.location.href = data.order_url;
                         }
                     });
                 })
                 .catch(err => {
-                    alert(err.message);
+                    (window.__showToast || window.showToast || function(m){ console.warn(m); })(err.message || 'Terjadi kesalahan.', 'error');
                     resetButton();
                 });
 
             function resetButton() {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-                btn.classList.remove('opacity-75');
             }
         });
     </script>

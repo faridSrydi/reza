@@ -1,126 +1,234 @@
 @extends('layouts.admin')
 
-@section('title', 'OVERVIEW_')
+@section('title', 'Admin Dashboard')
 
 @section('content')
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 mb-12 border-2 border-[#1a1a1a] bg-white">
-        
-        <div class="p-6 border-b-2 lg:border-b-0 lg:border-r-2 border-[#1a1a1a] hover:bg-[#F5F5F5] transition-colors group relative overflow-hidden">
-            <span class="absolute top-2 right-2 text-[60px] leading-none text-gray-100 font-black -z-0 group-hover:text-gray-200 transition-colors">01</span>
-            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-4 relative z-10">Total Sales</p>
-            <div class="flex flex-col relative z-10">
-                <span class="font-mono text-xs text-gray-400 mb-1">IDR CURRENCY</span>
-                <span class="text-3xl font-black tracking-tight text-[#1a1a1a]">45.2M</span>
-            </div>
-        </div>
 
-        <div class="p-6 border-b-2 md:border-b-0 md:border-r-2 border-[#1a1a1a] hover:bg-[#F5F5F5] transition-colors group relative">
-             <span class="absolute top-2 right-2 text-[60px] leading-none text-gray-100 font-black -z-0 group-hover:text-gray-200 transition-colors">02</span>
-            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-4 relative z-10">Product SKU</p>
-            <div class="flex flex-col relative z-10">
-                <span class="font-mono text-xs text-gray-400 mb-1">ACTIVE ITEMS</span>
-                <span class="text-3xl font-black tracking-tight text-[#1a1a1a]">2,340</span>
-            </div>
-        </div>
+    @php
+        $admin = auth()->user();
+        $adminName = $admin?->name ?? 'Admin';
+        $adminInitials = collect(explode(' ', trim($adminName)))
+            ->filter()
+            ->map(fn($p) => mb_substr($p, 0, 1))
+            ->take(2)
+            ->join('');
+    @endphp
 
-        <div class="p-6 border-b-2 md:border-b-0 lg:border-r-2 border-[#1a1a1a] hover:bg-[#F5F5F5] transition-colors group relative">
-             <span class="absolute top-2 right-2 text-[60px] leading-none text-gray-100 font-black -z-0 group-hover:text-gray-200 transition-colors">03</span>
-            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-4 relative z-10">Orders</p>
-            <div class="flex flex-col relative z-10">
-                <span class="font-mono text-xs text-gray-400 mb-1">PENDING PROC.</span>
-                <span class="text-3xl font-black tracking-tight text-[#EB0000]">12</span>
-            </div>
-        </div>
-
-         <div class="p-6 bg-[#1a1a1a] text-white flex flex-col justify-between group cursor-pointer hover:bg-[#EB0000] transition-colors">
-            <div class="flex justify-between items-start">
-                <p class="text-[10px] font-bold uppercase tracking-[0.2em] opacity-70">Quick Action</p>
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            </div>
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 bg-[radial-gradient(#ffd1dc_1px,transparent_1px)] [background-size:24px_24px]">
+        <header class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 mb-8 lg:mb-10">
             <div>
-                <p class="text-xl font-bold uppercase leading-none">Add New<br>Product</p>
+                <h2 class="text-3xl sm:text-4xl font-black text-[#181113] tracking-tight">Admin Dashboard</h2>
+                <p class="text-primary font-medium">Welcome back, {{ $adminName }}!</p>
             </div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        
-        <div class="lg:col-span-2 space-y-8">
-            <div class="flex items-center justify-between border-b-2 border-[#1a1a1a] pb-2">
-                <h3 class="text-xl font-black uppercase tracking-tighter">Recent Products</h3>
-                <a href="#" class="text-xs font-bold uppercase underline decoration-2 underline-offset-4 hover:text-[#EB0000]">View All</a>
-            </div>
-
-            <div class="space-y-4">
-                {{-- ITEM LIST STRIP --}}
-                @for($i = 1; $i <= 3; $i++)
-                <div class="flex items-center gap-6 p-4 border border-gray-200 bg-white hover:border-[#1a1a1a] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 group">
-                    <div class="w-16 h-16 bg-gray-100 flex items-center justify-center border border-gray-300">
-                        <span class="text-[10px] font-mono text-gray-400">IMG</span>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                <form method="GET" action="{{ route('admin.search') }}" class="relative group">
+                    <div
+                        class="absolute inset-0 bg-primary/20 rounded-full blur-xl group-hover:bg-primary/30 transition-all">
                     </div>
-                    
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="px-1.5 py-0.5 bg-[#EB0000] text-white text-[9px] font-bold uppercase">New</span>
-                            <span class="text-[10px] font-mono text-gray-500">SKU-892{{$i}}</span>
+                    <div class="relative bg-white px-4 py-3 rounded-full border-4 border-primary/20 flex items-center gap-3" data-admin-live-search-container>
+                        <span class="material-symbols-outlined text-primary">search</span>
+                        <input
+                            name="q"
+                            value="{{ request('q') }}"
+                            class="border-none focus:ring-0 text-sm font-medium w-[220px] sm:w-72 bg-transparent"
+                            placeholder="Search orders, products, users..."
+                            type="text"
+                            autocomplete="off"
+                            data-admin-live-search
+                        />
+
+                        <div class="hidden" data-admin-live-search-spinner>
+                            <div class="live-search-spinner"></div>
                         </div>
-                        <h4 class="font-bold text-lg leading-none uppercase group-hover:text-[#EB0000] transition-colors">Oversized Airism Tee</h4>
-                        <p class="text-xs text-gray-500 mt-1">Men / Tops / Casual</p>
                     </div>
-
+                </form>
+                <div class="flex items-center justify-between sm:justify-start gap-4">
                     <div class="text-right">
-                        <p class="font-mono text-sm font-bold">Rp 199.000</p>
-                        <p class="text-[10px] text-green-600 font-bold uppercase">Stock: 45</p>
+                        <p class="font-bold text-[#181113]">{{ $adminName }}</p>
+                        <p class="text-xs font-bold text-primary uppercase">Admin</p>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-0 lollipop-border rounded-full scale-110"></div>
+                        <div class="w-14 h-14 rounded-full bg-white border-4 border-white shadow-lg relative z-10 flex items-center justify-center text-primary font-black">
+                            {{ $adminInitials !== '' ? $adminInitials : 'A' }}
+                        </div>
                     </div>
                 </div>
-                @endfor
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8 mb-8 lg:mb-10">
+            <div
+                class="bg-white p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] border-4 border-primary/10 shadow-sm flex flex-col items-center text-center group hover:border-primary/30 transition-all">
+                <div
+                    class="donut-shape w-24 h-24 bg-pink-100 flex items-center justify-center mb-4 relative overflow-hidden">
+                    <div
+                        class="absolute inset-0 bg-[radial-gradient(circle_at_center,_#ff8fb1_2px,transparent_2px)] [background-size:8px_8px] opacity-40">
+                    </div>
+                    <span class="material-symbols-outlined text-primary text-4xl relative z-10"
+                        style="font-variation-settings: 'FILL' 1">payments</span>
+                </div>
+                <h3 class="text-primary/60 font-bold uppercase tracking-widest text-xs">Total Sales</h3>
+                <p class="text-3xl font-black text-[#181113]">{{ number_format($totalSalesQty ?? 0) }}</p>
+                <div class="mt-2 text-primary font-bold text-sm flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">inventory_2</span> Items sold (paid)
+                </div>
+            </div>
+            <div
+                class="bg-white p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] border-4 border-primary/10 shadow-sm flex flex-col items-center text-center group hover:border-primary/30 transition-all">
+                <div
+                    class="donut-shape w-24 h-24 bg-rose-100 flex items-center justify-center mb-4 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-primary/10"></div>
+                    <div class="absolute top-2 right-4 w-2 h-2 rounded-full bg-white opacity-60"></div>
+                    <span class="material-symbols-outlined text-primary text-4xl relative z-10"
+                        style="font-variation-settings: 'FILL' 1">shopping_bag</span>
+                </div>
+                <h3 class="text-primary/60 font-bold uppercase tracking-widest text-xs">Total Orders</h3>
+                <p class="text-3xl font-black text-[#181113]">{{ number_format($totalOrders ?? 0) }}</p>
+                <div class="mt-2 text-primary font-bold text-sm flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">receipt_long</span> All statuses
+                </div>
+            </div>
+            <div
+                class="bg-white p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] border-4 border-primary/10 shadow-sm flex flex-col items-center text-center group hover:border-primary/30 transition-all">
+                <div
+                    class="donut-shape w-24 h-24 bg-pink-50 flex items-center justify-center mb-4 relative overflow-hidden">
+                    <div class="absolute inset-0 border-[6px] border-primary/20 rounded-full"></div>
+                    <span class="material-symbols-outlined text-primary text-4xl relative z-10"
+                        style="font-variation-settings: 'FILL' 1">face_6</span>
+                </div>
+                <h3 class="text-primary/60 font-bold uppercase tracking-widest text-xs">Total Users</h3>
+                <p class="text-3xl font-black text-[#181113]">{{ number_format($totalUsers ?? 0) }}</p>
+                <div class="mt-2 text-primary font-bold text-sm flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">favorite</span> Registered users
+                </div>
+            </div>
+            <div
+                class="bg-white p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] border-4 border-primary/10 shadow-sm flex flex-col items-center text-center group hover:border-primary/30 transition-all">
+                <div
+                    class="donut-shape w-24 h-24 bg-rose-50 flex items-center justify-center mb-4 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(244,37,89,0.25)_2px,transparent_2px)] [background-size:10px_10px] opacity-40"></div>
+                    <span class="material-symbols-outlined text-primary text-4xl relative z-10"
+                        style="font-variation-settings: 'FILL' 1">paid</span>
+                </div>
+                <h3 class="text-primary/60 font-bold uppercase tracking-widest text-xs">Total Pemasukan</h3>
+                <p class="text-3xl font-black text-[#181113]">Rp {{ number_format($totalRevenue ?? 0, 0, ',', '.') }}</p>
+                <div class="mt-2 text-primary font-bold text-sm flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">payments</span> Paid only
+                </div>
             </div>
         </div>
 
-        <div class="space-y-8">
-            <div class="border-2 border-[#1a1a1a] p-6 bg-white">
-                <h3 class="text-sm font-black uppercase tracking-widest mb-6 border-b border-gray-200 pb-2">System Log</h3>
-                
-                <ul class="space-y-4 relative">
-                    <div class="absolute left-[5px] top-2 bottom-2 w-[1px] bg-gray-200"></div>
-
-                    <li class="pl-6 relative">
-                        <div class="absolute left-0 top-1.5 w-2.5 h-2.5 bg-[#1a1a1a]"></div>
-                        <p class="text-[10px] font-mono text-gray-500">10:42 AM</p>
-                        <p class="text-xs font-bold uppercase leading-tight mt-0.5">Category Updated</p>
-                        <p class="text-[10px] text-gray-400">By Admin User</p>
-                    </li>
-                    <li class="pl-6 relative">
-                        <div class="absolute left-0 top-1.5 w-2.5 h-2.5 bg-gray-300"></div>
-                        <p class="text-[10px] font-mono text-gray-500">09:15 AM</p>
-                        <p class="text-xs font-bold uppercase leading-tight mt-0.5">New Order #9921</p>
-                        <p class="text-[10px] text-gray-400">System Bot</p>
-                    </li>
-                     <li class="pl-6 relative">
-                        <div class="absolute left-0 top-1.5 w-2.5 h-2.5 bg-gray-300"></div>
-                        <p class="text-[10px] font-mono text-gray-500">Yesterday</p>
-                        <p class="text-xs font-bold uppercase leading-tight mt-0.5">Database Backup</p>
-                        <p class="text-[10px] text-gray-400">Automated</p>
-                    </li>
-                </ul>
-
-                <button class="w-full mt-8 border-2 border-[#1a1a1a] py-3 text-xs font-black uppercase tracking-widest hover:bg-[#1a1a1a] hover:text-white transition-all">
-                    View Full Logs
-                </button>
+        <div class="bg-white p-6 sm:p-10 rounded-[2.75rem] sm:rounded-[4rem] border-4 border-primary shadow-xl relative overflow-hidden mb-8 lg:mb-10">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+                <div>
+                    <h3 class="text-2xl font-black text-[#181113]">Sales Performance</h3>
+                    <p class="text-primary/60 font-medium">Last 30 days (paid revenue)</p>
+                </div>
+                <a href="{{ route('admin.orders.index') }}" class="px-4 py-2 rounded-full bg-primary/5 text-primary font-bold text-sm hover:bg-primary/10">View orders</a>
             </div>
+            <div class="relative h-[260px] sm:h-[300px] w-full flex items-end justify-between gap-2 px-2 sm:px-4 overflow-x-auto">
+                <div class="absolute inset-0 flex flex-col justify-between py-2 pointer-events-none opacity-5">
+                    <div class="border-b-2 border-primary w-full"></div>
+                    <div class="border-b-2 border-primary w-full"></div>
+                    <div class="border-b-2 border-primary w-full"></div>
+                    <div class="border-b-2 border-primary w-full"></div>
+                    <div class="border-b-2 border-primary w-full"></div>
+                </div>
 
-            <div class="bg-[#1a1a1a] p-6 text-white">
-                 <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">Storage Usage</h3>
-                 <div class="flex items-end gap-2 mb-2">
-                     <span class="text-4xl font-mono font-bold">42%</span>
-                     <span class="text-xs text-gray-400 mb-1">USED</span>
-                 </div>
-                 <div class="w-full h-1 bg-gray-700 mt-2">
-                     <div class="h-full bg-[#EB0000] w-[42%]"></div>
-                 </div>
+                @foreach (($salesPerformance ?? []) as $day)
+                    @php
+                        $pct = (int) round(($day['revenue'] / ($maxRevenue ?? 1)) * 100);
+                        $pct = max(2, min(100, $pct));
+                    @endphp
+                    <div class="relative flex flex-col items-center justify-end min-w-[34px] w-[34px] h-full" title="{{ $day['labelLong'] ?? $day['date'] }} · Rp {{ number_format($day['revenue'] ?? 0, 0, ',', '.') }} · {{ $day['orders'] ?? 0 }} order">
+                        <div class="w-full bg-primary/10 rounded-3xl overflow-hidden border-2 border-primary/10 flex items-end" style="height: 90%;">
+                            <div class="w-full bg-primary rounded-3xl" style="height: {{ $pct }}%;"></div>
+                        </div>
+                        <div class="mt-3 text-[11px] font-black text-primary/50 uppercase">{{ $day['label'] }}</div>
+                    </div>
+                @endforeach
             </div>
         </div>
-
-    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            <div class="bg-white p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] border-4 border-primary/10">
+                <h4 class="text-xl font-black text-[#181113] mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">auto_awesome</span>
+                    Order Terbaru
+                </h4>
+                <div class="space-y-4">
+                    @forelse (($recentOrders ?? collect()) as $o)
+                        @php
+                            $name = $o->user?->name ?? 'Guest';
+                            $initials = collect(explode(' ', trim($name)))
+                                ->filter()
+                                ->map(fn($p) => mb_substr($p, 0, 1))
+                                ->take(2)
+                                ->join('');
+                            $badge = match ($o->status) {
+                                'paid' => 'bg-green-100 text-green-700',
+                                'cancelled' => 'bg-zinc-100 text-zinc-700',
+                                'failed' => 'bg-red-100 text-red-700',
+                                default => 'bg-primary/10 text-primary',
+                            };
+                        @endphp
+                        <a href="{{ route('admin.orders.show', $o) }}" class="block p-4 bg-primary/5 rounded-2xl hover:bg-primary/10 transition-colors">
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary shrink-0">
+                                        {{ $initials !== '' ? $initials : 'U' }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="font-black text-sm truncate">{{ $o->order_number }}</p>
+                                        <p class="text-xs text-primary/60 font-bold truncate">{{ $name }} · {{ $o->created_at?->format('d M Y H:i') }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <div class="text-primary font-black">Rp {{ number_format($o->total_amount ?? 0, 0, ',', '.') }}</div>
+                                    <div class="mt-1 inline-flex px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest {{ $badge }}">{{ $o->status }}</div>
+                                </div>
+                            </div>
+                        </a>
+                    @empty
+                        <div class="p-8 text-center text-primary/60 font-bold">Belum ada order.</div>
+                    @endforelse
+                </div>
+            </div>
+            <div class="bg-white p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] border-4 border-primary/10">
+                <h4 class="text-xl font-black text-[#181113] mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">stars</span>
+                    User Terbaru
+                </h4>
+                <div class="space-y-3">
+                    @forelse (($recentUsers ?? collect()) as $u)
+                        @php
+                            $name = $u->name ?? 'User';
+                            $initials = collect(explode(' ', trim($name)))
+                                ->filter()
+                                ->map(fn($p) => mb_substr($p, 0, 1))
+                                ->take(2)
+                                ->join('');
+                        @endphp
+                        <div class="flex items-center justify-between gap-4 p-4 bg-primary/5 rounded-2xl">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-full bg-white border-2 border-primary/15 flex items-center justify-center text-primary font-black shrink-0">
+                                    {{ $initials !== '' ? $initials : 'U' }}
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="font-black text-sm truncate">{{ $name }}</div>
+                                    <div class="text-xs font-bold text-primary/60 truncate">{{ $u->email }}</div>
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <div class="text-[10px] font-black uppercase tracking-widest text-primary/50">Joined</div>
+                                <div class="text-xs font-bold text-primary">{{ $u->created_at?->format('d M Y H:i') }}</div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-primary/60 font-bold">Belum ada user.</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </main>
 @endsection

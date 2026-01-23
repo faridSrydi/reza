@@ -1,89 +1,116 @@
-@extends('layouts.app')
+@extends('layouts.user')
 
-@section('title', 'Akun Saya')
+@section('title', 'Dashboard')
 
-@section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <div class="flex flex-col md:flex-row gap-8">
-        
-        {{-- SIDEBAR NAV --}}
-        <aside class="w-full md:w-64 space-y-1">
-            <div class="pb-4 mb-4 border-b border-gray-100">
-                <h2 class="text-xs font-black uppercase tracking-widest text-gray-400">Menu Akun</h2>
+@section('user_content')
+@php
+    $u = auth()->user();
+    $wishlistCount = \Illuminate\Support\Facades\DB::table('wishlists')
+        ->where('user_id', $u->id)
+        ->count();
+    $addressCount = \App\Models\Address::query()
+        ->where('user_id', $u->id)
+        ->count();
+    $memberSince = $u->created_at ? $u->created_at->format('M Y') : null;
+@endphp
+
+<div class="space-y-6">
+                <section class="relative overflow-hidden rounded-[2.5rem] border-2 border-primary/10 bg-white/85 dark:bg-zinc-900/85 backdrop-blur-md shadow-xl shadow-primary/5 p-6 sm:p-8">
+                    <div class="absolute -top-16 -right-16 w-60 h-60 rounded-full bg-primary/10 blur-2xl"></div>
+                    <div class="absolute -bottom-16 -left-16 w-60 h-60 rounded-full bg-candy-pink/60 blur-2xl"></div>
+
+                    <div class="relative">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-primary/60">Welcome back</p>
+                        <h1 class="mt-2 text-3xl sm:text-4xl font-black tracking-tight text-[#181113] dark:text-white">
+                            Hi, {{ $u->name ?? 'Sweetie' }}!
+                        </h1>
+                        <p class="mt-2 text-primary/60 font-semibold max-w-2xl">
+                            Manage your wishlist, saved addresses, and keep shopping for your next sweet craving.
+                        </p>
+
+                        <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                            <a href="{{ route('shop.index') }}"
+                                class="inline-flex items-center justify-center gap-2 bg-primary text-white font-black px-6 py-3 rounded-full hover:scale-105 transition-transform shadow-xl shadow-primary/25">
+                                <span class="material-symbols-outlined">shopping_bag</span>
+                                Shop Now
+                            </a>
+                            <a href="{{ route('wishlist.index') }}"
+                                class="inline-flex items-center justify-center gap-2 bg-primary/5 text-primary font-black px-6 py-3 rounded-full hover:bg-primary/10 transition-colors border-2 border-primary/10">
+                                <span class="material-symbols-outlined">favorite</span>
+                                View Wishlist
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white/85 dark:bg-zinc-900/85 backdrop-blur-md rounded-3xl border-2 border-primary/10 p-6 shadow-xl shadow-primary/5">
+                        <div class="flex items-center gap-3 text-primary font-black">
+                            <span class="material-symbols-outlined">favorite</span>
+                            Wishlist Items
+                        </div>
+                        <div class="mt-3 text-4xl font-black text-[#181113] dark:text-white">{{ $wishlistCount }}</div>
+                        <p class="mt-2 text-primary/60 font-semibold text-sm">Treats you saved for later.</p>
+                    </div>
+                    <div class="bg-white/85 dark:bg-zinc-900/85 backdrop-blur-md rounded-3xl border-2 border-primary/10 p-6 shadow-xl shadow-primary/5">
+                        <div class="flex items-center gap-3 text-primary font-black">
+                            <span class="material-symbols-outlined">location_on</span>
+                            Saved Addresses
+                        </div>
+                        <div class="mt-3 text-4xl font-black text-[#181113] dark:text-white">{{ $addressCount }}</div>
+                        <p class="mt-2 text-primary/60 font-semibold text-sm">Faster checkout next time.</p>
+                    </div>
+                    <div class="bg-white/85 dark:bg-zinc-900/85 backdrop-blur-md rounded-3xl border-2 border-primary/10 p-6 shadow-xl shadow-primary/5">
+                        <div class="flex items-center gap-3 text-primary font-black">
+                            <span class="material-symbols-outlined">cake</span>
+                            Member Since
+                        </div>
+                        <div class="mt-3 text-2xl sm:text-3xl font-black text-[#181113] dark:text-white">{{ $memberSince ?? '—' }}</div>
+                        <p class="mt-2 text-primary/60 font-semibold text-sm">Thanks for joining us.</p>
+                    </div>
+                </div>
+
+                <section class="bg-white/85 dark:bg-zinc-900/85 backdrop-blur-md rounded-[2.5rem] border-2 border-primary/10 p-6 sm:p-8 shadow-xl shadow-primary/5">
+                    <div class="flex items-start justify-between gap-6">
+                        <div>
+                            <h2 class="text-2xl font-black text-[#181113] dark:text-white">Quick Actions</h2>
+                            <p class="mt-2 text-primary/60 font-semibold">Jump to what you need in one tap.</p>
+                        </div>
+                        <span class="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <a href="{{ route('addresses.create') }}"
+                            class="group rounded-3xl border-2 border-primary/10 bg-primary/5 p-5 hover:bg-primary/10 transition-colors">
+                            <div class="flex items-center gap-3 text-primary font-black">
+                                <span class="material-symbols-outlined">add_location</span>
+                                Add New Address
+                            </div>
+                            <p class="mt-2 text-sm font-semibold text-primary/60">Save your shipping address.</p>
+                        </a>
+                        <a href="{{ route('wishlist.index') }}"
+                            class="group rounded-3xl border-2 border-primary/10 bg-primary/5 p-5 hover:bg-primary/10 transition-colors">
+                            <div class="flex items-center gap-3 text-primary font-black">
+                                <span class="material-symbols-outlined">favorite</span>
+                                Open Wishlist
+                            </div>
+                            <p class="mt-2 text-sm font-semibold text-primary/60">See your saved treats.</p>
+                        </a>
+                        <a href="{{ route('shop.index') }}"
+                            class="group rounded-3xl border-2 border-primary/10 bg-primary/5 p-5 hover:bg-primary/10 transition-colors">
+                            <div class="flex items-center gap-3 text-primary font-black">
+                                <span class="material-symbols-outlined">storefront</span>
+                                Browse Shop
+                            </div>
+                            <p class="mt-2 text-sm font-semibold text-primary/60">Find something sweet today.</p>
+                        </a>
+                    </div>
+
+                    <div class="mt-6 rounded-3xl border-2 border-dashed border-primary/15 bg-white/60 dark:bg-zinc-900/40 p-5">
+                        <p class="text-sm font-extrabold text-primary">Orders</p>
+                        <p class="mt-1 text-sm font-semibold text-primary/60">Order history UI can be added once the orders module is ready.</p>
+                    </div>
+                </section>
             </div>
-            <a href="#" class="flex items-center px-4 py-3 text-sm font-bold uppercase tracking-tighter bg-black text-white rounded-sm">Dashboard</a>
-            <a href="#" class="flex items-center px-4 py-3 text-sm font-bold uppercase tracking-tighter text-gray-600 hover:bg-gray-100 transition rounded-sm">Pesanan Saya</a>
-            <a href="#" class="flex items-center px-4 py-3 text-sm font-bold uppercase tracking-tighter text-gray-600 hover:bg-gray-100 transition rounded-sm">Alamat Pengiriman</a>
-            <a href="#" class="flex items-center px-4 py-3 text-sm font-bold uppercase tracking-tighter text-red-600 hover:bg-red-50 transition rounded-sm mt-10">Keluar</a>
-        </aside>
-
-        {{-- MAIN CONTENT --}}
-        <div class="flex-1 space-y-8">
-            
-            {{-- WELCOME BANNER --}}
-            <section class="bg-white p-8 border border-gray-100 shadow-sm relative overflow-hidden">
-                <div class="relative z-10">
-                    <h1 class="text-2xl font-black uppercase tracking-tighter">Halo, {{ auth()->user()->name ?? 'Pelanggan Setia' }}!</h1>
-                    <p class="text-sm text-gray-500 mt-1">Senang melihat Anda kembali. Cek status pesanan terbaru Anda di sini.</p>
-                </div>
-                <div class="absolute right-0 top-0 h-full w-32 bg-gray-50 -skew-x-12 translate-x-10"></div>
-            </section>
-
-            {{-- STATS GRID --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white p-6 border border-gray-100">
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Pesanan</p>
-                    <p class="text-3xl font-black mt-2">12</p>
-                </div>
-                <div class="bg-white p-6 border border-gray-100">
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Menunggu Pembayaran</p>
-                    <p class="text-3xl font-black mt-2 text-red-600">1</p>
-                </div>
-                <div class="bg-white p-6 border border-gray-100">
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Point Reward</p>
-                    <p class="text-3xl font-black mt-2 text-indigo-600">2.500</p>
-                </div>
-            </div>
-
-            {{-- RECENT ORDERS TABLE --}}
-            <section class="bg-white border border-gray-100">
-                <div class="p-6 border-b border-gray-50 flex justify-between items-center">
-                    <h3 class="text-sm font-black uppercase tracking-widest">Pesanan Terakhir</h3>
-                    <a href="#" class="text-[10px] font-bold underline uppercase tracking-tighter">Lihat Semua</a>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                <th class="px-6 py-4">Order ID</th>
-                                <th class="px-6 py-4">Tanggal</th>
-                                <th class="px-6 py-4">Status</th>
-                                <th class="px-6 py-4 text-right">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50 text-sm italic font-medium">
-                            <tr>
-                                <td class="px-6 py-4 font-bold not-italic">#INV-99021</td>
-                                <td class="px-6 py-4 text-gray-500">24 Des 2025</td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-tighter rounded-sm">Dikirim</span>
-                                </td>
-                                <td class="px-6 py-4 text-right font-black not-italic">Rp 599.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4 font-bold not-italic">#INV-98812</td>
-                                <td class="px-6 py-4 text-gray-500">12 Des 2025</td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2 py-1 bg-gray-100 text-gray-700 text-[10px] font-bold uppercase tracking-tighter rounded-sm">Selesai</span>
-                                </td>
-                                <td class="px-6 py-4 text-right font-black not-italic">Rp 1.250.000</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-        </div>
-    </div>
 </div>
 @endsection

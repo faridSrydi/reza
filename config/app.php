@@ -107,6 +107,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Footer / Public Info
+    |--------------------------------------------------------------------------
+    */
+
+    'company_address' => env('APP_COMPANY_ADDRESS', 'Jakarta Selatan, Indonesia'),
+
+    'social_links' => [
+        'instagram' => env('APP_SOCIAL_INSTAGRAM_URL'),
+        'tiktok' => env('APP_SOCIAL_TIKTOK_URL'),
+        'whatsapp' => env('APP_SOCIAL_WHATSAPP_URL'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Maintenance Mode Driver
     |--------------------------------------------------------------------------
     |

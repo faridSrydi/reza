@@ -1,152 +1,189 @@
 @extends('layouts.admin')
 
-@section('title', 'SPEC_SHEET_')
+@section('title', 'Product: ' . $product->name)
 
 @section('content')
-    <div class="max-w-5xl mx-auto">
+    <main class="flex-1 flex flex-col py-10 px-10 relative overflow-hidden min-h-screen">
+        {{-- DECORATION BACKGROUND --}}
+        <div class="absolute top-24 right-10 opacity-5 rotate-12 pointer-events-none">
+            <span class="material-symbols-outlined text-[150px] text-primary">icecream</span>
+        </div>
+        <div class="absolute bottom-20 left-10 opacity-5 -rotate-12 pointer-events-none">
+            <span class="material-symbols-outlined text-[120px] text-primary">cookie</span>
+        </div>
 
-        {{-- HEADER NAVIGATION --}}
-        <div class="flex justify-between items-end mb-6 border-b-2 border-[#1a1a1a] pb-4">
+        <div class="flex items-center gap-2 mb-6 z-10">
+            <a class="text-primary/60 text-sm font-semibold hover:text-primary" href="{{ route('admin.products.index') }}">Products</a>
+            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
+            <span class="text-primary text-sm font-bold">{{ $product->name }}</span>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8 z-10">
             <div>
-                <span class="font-mono text-xs text-gray-400 block mb-1">DATABASE // RECORD_VIEW</span>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-3xl font-black uppercase tracking-tighter text-[#1a1a1a] leading-none">
-                        Product Details
-                    </h1>
-                    <span class="px-2 py-1 bg-[#1a1a1a] text-white text-[10px] font-mono font-bold">
-                        ID: {{ substr(md5($product->id), 0, 6) }}
+                <div class="flex items-center gap-3 flex-wrap">
+                    <h1 class="text-[#181113] dark:text-white text-4xl font-black tracking-tight">Product Detail</h1>
+                    <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-widest">
+                        ID: {{ substr(md5($product->id), 0, 8) }}
                     </span>
                 </div>
+                <div class="text-primary/70 font-semibold mt-1">Slug: <span class="font-mono text-xs">{{ $product->slug }}</span></div>
             </div>
 
-            <div class="flex gap-4">
-                <a href="{{ route('admin.products.index') }}"
-                    class="text-[10px] font-bold uppercase tracking-widest hover:text-[#EB0000] decoration-2 underline underline-offset-4 self-center">
-                    < Back to Index </a>
-
-                        <a href="{{ route('admin.products.edit', $product) }}"
-                            class="bg-[#1a1a1a] text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-[#EB0000] transition-colors">
-                            Edit Entry
-                        </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('admin.products.index') }}" class="px-4 py-2 rounded-2xl bg-white dark:bg-background-dark border-2 border-primary/10 text-primary font-black hover:bg-primary/5">
+                    Back
+                </a>
+                <a href="{{ route('admin.products.edit', $product) }}" class="px-4 py-2 rounded-2xl bg-primary text-white font-black hover:brightness-105">
+                    Edit
+                </a>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-0 border-2 border-[#1a1a1a] bg-white">
+        @php
+            $minPrice = $product->variants->min('price');
+            $maxPrice = $product->variants->max('price');
+            $totalStock = (int) $product->variants->sum('stock');
+            $hasImages = $product->images->count() > 0;
+            $mainImage = $hasImages ? $product->images->first()->image : null;
+        @endphp
 
-            {{-- COL 1: IMAGES GALLERY --}}
-            <div class="lg:col-span-1 border-b-2 lg:border-b-0 lg:border-r-2 border-[#1a1a1a] bg-[#F5F5F5] p-6">
-                <h3 class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-4">Visual Assets</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 z-10">
+            {{-- IMAGES --}}
+            <div class="bg-white dark:bg-background-dark/80 rounded-3xl border-2 border-primary/10 overflow-hidden h-fit">
+                <div class="p-6 border-b border-primary/10 flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-primary/60 uppercase tracking-widest">Gallery</div>
+                        <div class="text-lg font-black text-[#181113] dark:text-white">Images</div>
+                    </div>
+                    <span class="px-3 py-1 rounded-full bg-secondary/20 text-primary text-xs font-black uppercase tracking-widest">
+                        {{ $product->images->count() }} pics
+                    </span>
+                </div>
 
-                <div class="space-y-4">
-                    {{-- Main Image (First one) --}}
-                    @if ($product->images->count() > 0)
-                        <div class="border-2 border-[#1a1a1a] bg-white p-2">
-                            <img src="{{ asset('storage/' . $product->images->first()->image) }}"
-                                class="w-full h-auto object-cover aspect-square grayscale hover:grayscale-0 transition-all duration-500">
+                <div class="p-6 space-y-4">
+                    @if($mainImage)
+                        <div class="w-full aspect-square rounded-3xl overflow-hidden border-2 border-primary/10 bg-primary/5">
+                            <img
+                                src="{{ asset('storage/' . ltrim($mainImage, '/')) }}"
+                                alt="{{ $product->name }}"
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                            />
                         </div>
 
-                        {{-- Thumbnails Grid --}}
-                        @if ($product->images->count() > 1)
-                            <div class="grid grid-cols-3 gap-2">
-                                @foreach ($product->images->skip(1) as $img)
-                                    <div class="border border-gray-400 hover:border-[#1a1a1a] cursor-pointer">
-                                        <img src="{{ asset('storage/' . $img->image) }}"
-                                            class="w-full h-full object-cover aspect-square grayscale hover:grayscale-0 transition-all">
+                        @if($product->images->count() > 1)
+                            <div class="grid grid-cols-4 gap-3">
+                                @foreach($product->images->skip(1) as $img)
+                                    <div class="aspect-square rounded-2xl overflow-hidden border-2 border-primary/10 bg-primary/5">
+                                        <img
+                                            src="{{ asset('storage/' . ltrim($img->image, '/')) }}"
+                                            alt="{{ $product->name }}"
+                                            class="w-full h-full object-cover"
+                                            loading="lazy"
+                                        />
                                     </div>
                                 @endforeach
                             </div>
                         @endif
                     @else
-                        <div
-                            class="w-full aspect-square bg-gray-200 border-2 border-dashed border-gray-400 flex items-center justify-center">
-                            <span class="font-mono text-xs text-gray-400">NO_IMAGE_DATA</span>
+                        <div class="w-full aspect-square rounded-3xl bg-primary/5 border-2 border-dashed border-primary/20 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="text-primary font-black">No images</div>
+                                <div class="text-primary/60 text-xs font-semibold">Upload in edit page</div>
+                            </div>
                         </div>
                     @endif
                 </div>
             </div>
 
-            {{-- COL 2: DATA & VARIANTS --}}
-            <div class="lg:col-span-2">
-
-                {{-- Top Info --}}
-                <div class="p-8 border-b-2 border-[#1a1a1a]">
-                    <div class="flex justify-between items-start mb-4">
-                        <span
-                            class="inline-block px-3 py-1 border border-[#1a1a1a] text-[10px] font-bold uppercase bg-white tracking-wider">
-                            {{ $product->category->name }}
-                        </span>
-                        <span class="font-mono text-xs text-gray-400">
-                            CREATED: {{ $product->created_at->format('d M Y') }}
-                        </span>
+            {{-- DETAILS + VARIANTS --}}
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white dark:bg-background-dark/80 rounded-3xl border-2 border-primary/10 overflow-hidden">
+                    <div class="p-6 border-b border-primary/10 flex items-start justify-between gap-4">
+                        <div>
+                            <div class="text-xs font-bold text-primary/60 uppercase tracking-widest">Category</div>
+                            <div class="mt-1 inline-flex items-center gap-2">
+                                <span class="px-4 py-1.5 rounded-full bg-secondary/20 text-primary text-xs font-black uppercase tracking-widest">
+                                    {{ $product->category->name ?? 'Uncategorized' }}
+                                </span>
+                                <span class="text-primary/60 text-xs font-semibold">Created: {{ $product->created_at?->format('d M Y') }}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs font-bold text-primary/60 uppercase tracking-widest">Price Range</div>
+                            <div class="text-lg font-black text-primary">
+                                @if($minPrice === null)
+                                    Rp —
+                                @elseif($minPrice === $maxPrice)
+                                    Rp {{ number_format((float) $minPrice, 0, ',', '.') }}
+                                @else
+                                    Rp {{ number_format((float) $minPrice, 0, ',', '.') }} – {{ number_format((float) $maxPrice, 0, ',', '.') }}
+                                @endif
+                            </div>
+                        </div>
                     </div>
 
-                    <h2 class="text-4xl font-black uppercase leading-none text-[#1a1a1a] mb-6">
-                        {{ $product->name }}
-                    </h2>
+                    <div class="p-6">
+                        <div class="text-xs font-bold text-primary/60 uppercase tracking-widest">Name</div>
+                        <div class="text-3xl font-black text-[#181113] dark:text-white mt-1">{{ $product->name }}</div>
 
-                    <div class="mb-2">
-                        <span
-                            class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 block mb-2">Description</span>
-                        <p class="text-sm text-gray-800 leading-relaxed font-medium max-w-2xl">
-                            {{ $product->description }}
-                        </p>
+                        <div class="mt-6">
+                            <div class="text-xs font-bold text-primary/60 uppercase tracking-widest">Description</div>
+                            <div class="mt-2 text-sm font-semibold text-[#181113]/80 dark:text-white/80 leading-relaxed whitespace-pre-line">
+                                {{ $product->description }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Variant Table --}}
-                <div class="p-0">
-                    <div class="flex items-center justify-between p-4 bg-[#1a1a1a] text-white">
-                        <h3 class="text-[10px] font-bold uppercase tracking-[0.2em]">Inventory Configuration</h3>
-                        <span class="font-mono text-xs">{{ $product->variants->count() }} UNITS</span>
+                <div class="bg-white dark:bg-background-dark/80 rounded-3xl border-2 border-primary/10 overflow-hidden">
+                    <div class="p-6 border-b border-primary/10 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-bold text-primary/60 uppercase tracking-widest">Inventory</div>
+                            <div class="text-lg font-black text-[#181113] dark:text-white">Variants</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-widest">{{ $product->variants->count() }} variants</span>
+                            <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-black uppercase tracking-widest">Stock: {{ $totalStock }}</span>
+                        </div>
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-100 border-b border-[#1a1a1a]">
-                                    <th class="py-3 px-6 text-[9px] font-bold uppercase tracking-wider text-gray-500 w-1/4">
-                                        Color</th>
-                                    <th class="py-3 px-6 text-[9px] font-bold uppercase tracking-wider text-gray-500 w-1/4">
-                                        Size</th>
-                                    <th
-                                        class="py-3 px-6 text-[9px] font-bold uppercase tracking-wider text-gray-500 w-1/4 text-right">
-                                        Stock</th>
-                                    <th
-                                        class="py-3 px-6 text-[9px] font-bold uppercase tracking-wider text-gray-500 w-1/4 text-right">
-                                        Price</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                @foreach ($product->variants as $v)
-                                    <tr class="hover:bg-red-50 transition-colors group">
-                                        <td
-                                            class="py-3 px-6 font-mono text-xs font-bold text-[#1a1a1a] uppercase group-hover:text-[#EB0000]">
-                                            {{ $v->color }}
-                                        </td>
-                                        <td class="py-3 px-6 font-mono text-xs font-bold text-[#1a1a1a] uppercase">
-                                            {{ $v->size }}
-                                        </td>
-                                        <td class="py-3 px-6 text-right">
-                                            @if ($v->stock > 0)
-                                                <span class="text-xs font-bold text-green-700 bg-green-100 px-2 py-0.5">
-                                                    {{ $v->stock }}
-                                                </span>
-                                            @else
-                                                <span class="text-[10px] font-bold text-white bg-[#EB0000] px-2 py-0.5">
-                                                    OUT
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td class="py-3 px-6 text-right font-mono text-sm font-bold">
-                                            Rp {{ number_format($v->price, 0, ',', '.') }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <div class="p-6">
+                        @if($product->variants->count() === 0)
+                            <div class="text-center text-primary/60 font-bold py-10">No variants yet</div>
+                        @else
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="candy-table-header">
+                                            <th class="p-4 text-primary font-extrabold uppercase text-xs tracking-wider">Color</th>
+                                            <th class="p-4 text-primary font-extrabold uppercase text-xs tracking-wider">Size</th>
+                                            <th class="p-4 text-primary font-extrabold uppercase text-xs tracking-wider text-right">Stock</th>
+                                            <th class="p-4 text-primary font-extrabold uppercase text-xs tracking-wider text-right">Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-primary/5">
+                                        @foreach($product->variants as $v)
+                                            <tr class="hover:bg-primary/5 transition-colors">
+                                                <td class="p-4 font-black text-[#181113] dark:text-white">{{ $v->color ?: '—' }}</td>
+                                                <td class="p-4 font-black text-[#181113] dark:text-white">{{ $v->size ?: '—' }}</td>
+                                                <td class="p-4 text-right">
+                                                    @if((int) $v->stock > 0)
+                                                        <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-black uppercase tracking-widest">{{ (int) $v->stock }}</span>
+                                                    @else
+                                                        <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-black uppercase tracking-widest">Out</span>
+                                                    @endif
+                                                </td>
+                                                <td class="p-4 text-right font-black text-primary">Rp {{ number_format((float) $v->price, 0, ',', '.') }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 @endsection

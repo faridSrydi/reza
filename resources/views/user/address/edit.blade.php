@@ -1,112 +1,157 @@
-@extends('layouts.app')
+@extends('layouts.user')
 
-@section('content')
-    <div class="max-w-3xl mx-auto px-4 py-12 text-[#1a1a1a] font-sans">
+@section('title', isset($address) ? 'Edit Alamat' : 'Tambah Alamat')
 
-        {{-- HEADER SECTION --}}
-        <div class="mb-10 border-b-2 border-[#1a1a1a] pb-6">
-            <span class="font-mono text-xs text-gray-400 block mb-2 uppercase tracking-wider">Form // Address Entry</span>
-            <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tighter leading-none">
-                {{ isset($address) ? 'Edit Data Alamat' : 'Input Alamat Baru' }}
-            </h1>
+@section('user_content')
+    <div class="w-full py-2 sm:py-4">
+        <div class="flex items-center gap-2 mb-6">
+            <a class="text-primary/60 text-sm font-semibold hover:text-primary transition-colors" href="{{ route('home') }}">Home</a>
+            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
+            <a class="text-primary/60 text-sm font-semibold hover:text-primary transition-colors" href="{{ route('addresses.index') }}">Addresses</a>
+            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
+            <span class="text-primary text-sm font-bold">{{ isset($address) ? 'Edit' : 'Tambah' }}</span>
         </div>
 
-        <form action="{{ isset($address) ? route('user.addresses.update', $address->id) : route('user.addresses.store') }}"
-            method="POST">
-            @csrf
-            @if (isset($address))
-                @method('PUT')
-            @endif
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+            <div class="flex flex-col gap-2">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight">{{ isset($address) ? 'Edit Alamat' : 'Tambah Alamat' }}</h1>
+                <p class="text-primary/60 font-semibold">{{ isset($address) ? 'Perbarui data alamat pengiriman.' : 'Isi data alamat untuk pengiriman.' }}</p>
+            </div>
+            <a href="{{ route('addresses.index') }}"
+                class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-primary/40 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-sm">arrow_back</span> Kembali
+            </a>
+        </div>
 
-            <div class="space-y-8">
+        @if ($errors->any())
+            <div class="mb-8 p-4 bg-primary/5 border-l-4 border-primary rounded-r-xl">
+                <p class="text-sm font-bold uppercase tracking-wide text-primary">Periksa input kamu</p>
+                <ul class="mt-2 text-sm text-primary/70 font-semibold list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-                {{-- ROW 1: PERSONAL INFO --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {{-- Nama --}}
-                    <div class="group">
-                        <label
-                            class="block font-mono text-xs font-bold uppercase text-gray-500 mb-2 group-focus-within:text-black transition-colors">
-                            Nama Penerima <span class="text-red-600">*</span>
-                        </label>
-                        <input type="text" name="name" value="{{ old('name', $address->name ?? '') }}"
-                            class="w-full border border-gray-300 bg-white p-3 text-sm focus:outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a] transition-all rounded-none placeholder-gray-300"
-                            placeholder="CONTOH: BUDI SANTOSO" required>
+        <div class="candy-cane-border rounded-xl p-1 bg-white/80 dark:bg-white/5">
+            <div class="relative bg-white dark:bg-background-dark/40 border-4 border-primary/10 rounded-xl p-8 shadow-xl shadow-primary/5 overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent"></div>
+
+                <div class="relative z-10">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="flex flex-col items-center gap-1 shrink-0">
+                            <div class="relative flex size-14 items-center justify-center rounded-full lollipop-gradient text-white shadow-lg shadow-primary/30 overflow-hidden">
+                                <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent)]"></div>
+                                <span class="material-symbols-outlined text-3xl font-bold fill-1 relative">{{ isset($address) ? 'edit' : 'add_location' }}</span>
+                            </div>
+                            <div class="w-2 h-6 bg-orange-200 dark:bg-orange-900 rounded-b-full shadow-sm -mt-1"></div>
+                        </div>
+
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold uppercase tracking-widest text-primary/60">{{ isset($address) ? 'Update Snack-Spot' : 'New Snack-Spot' }}</p>
+                            <h2 class="text-2xl font-extrabold text-[#181113] dark:text-white tracking-tight">{{ isset($address) ? 'Edit Alamat' : 'Alamat Baru' }}</h2>
+                            <p class="text-primary/60 font-semibold text-sm mt-1">{{ isset($address) ? 'Biar kurir nggak nyasar.' : 'Biar pengiriman makin sat-set.' }}</p>
+                        </div>
                     </div>
 
-                    {{-- Telepon --}}
-                    <div class="group">
-                        <label
-                            class="block font-mono text-xs font-bold uppercase text-gray-500 mb-2 group-focus-within:text-black transition-colors">
-                            No. Telepon <span class="text-red-600">*</span>
-                        </label>
-                        <input type="text" name="phone" value="{{ old('phone', $address->phone ?? '') }}"
-                            class="w-full border border-gray-300 bg-white p-3 text-sm focus:outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a] transition-all rounded-none placeholder-gray-300"
-                            placeholder="0812..." required>
-                    </div>
-                </div>
+                    <form action="{{ route('addresses.update', $address->id) }}" method="POST" class="space-y-8">
+                        @csrf
+                        @if (isset($address))
+                            @method('PUT')
+                        @endif
 
-                {{-- ROW 2: ADDRESS --}}
-                <div class="group">
-                    <label
-                        class="block font-mono text-xs font-bold uppercase text-gray-500 mb-2 group-focus-within:text-black transition-colors">
-                        Alamat Lengkap <span class="text-red-600">*</span>
-                    </label>
-                    <textarea name="address" rows="4"
-                        class="w-full border border-gray-300 bg-white p-3 text-sm focus:outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a] transition-all rounded-none placeholder-gray-300"
-                        placeholder="Jalan, Nomor Rumah, RT/RW, Patokan..." required>{{ old('address', $address->address ?? '') }}</textarea>
-                    <p class="text-[10px] text-gray-400 mt-1">* Tulis selengkap mungkin untuk memudahkan pengiriman.</p>
-                </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-primary/60 uppercase tracking-widest">
+                                    Nama Penerima <span class="text-red-600">*</span>
+                                </label>
+                                <input type="text" name="name" value="{{ old('name', $address->name ?? '') }}" required
+                                    placeholder="Contoh: Budi Santoso"
+                                    class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none placeholder:text-primary/40" />
+                            </div>
 
-                {{-- ROW 3: LOCATION DETAILS --}}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {{-- Kota --}}
-                    <div class="group">
-                        <label
-                            class="block font-mono text-xs font-bold uppercase text-gray-500 mb-2 group-focus-within:text-black transition-colors">
-                            Kota / Kab <span class="text-red-600">*</span>
-                        </label>
-                        <input type="text" name="city" value="{{ old('city', $address->city ?? '') }}"
-                            class="w-full border border-gray-300 bg-white p-3 text-sm focus:outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a] transition-all rounded-none"
-                            required>
-                    </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-primary/60 uppercase tracking-widest">
+                                    No. Telepon <span class="text-red-600">*</span>
+                                </label>
+                                <input type="text" name="phone" value="{{ old('phone', $address->phone ?? '') }}" required
+                                    placeholder="0812..."
+                                    class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none placeholder:text-primary/40" />
+                            </div>
+                        </div>
 
-                    {{-- Provinsi --}}
-                    <div class="group">
-                        <label
-                            class="block font-mono text-xs font-bold uppercase text-gray-500 mb-2 group-focus-within:text-black transition-colors">
-                            Provinsi <span class="text-red-600">*</span>
-                        </label>
-                        <input type="text" name="province" value="{{ old('province', $address->province ?? '') }}"
-                            class="w-full border border-gray-300 bg-white p-3 text-sm focus:outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a] transition-all rounded-none"
-                            required>
-                    </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-primary/60 uppercase tracking-widest">
+                                Alamat Lengkap <span class="text-red-600">*</span>
+                            </label>
+                            <textarea name="address" rows="4" required
+                                placeholder="Jalan, nomor rumah, RT/RW, patokan..."
+                                class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none placeholder:text-primary/40">{{ old('address', $address->address ?? '') }}</textarea>
+                            <p class="text-[10px] text-primary/50 font-semibold">* Tulis selengkap mungkin untuk memudahkan pengiriman.</p>
+                        </div>
 
-                    {{-- Kode Pos --}}
-                    <div class="group">
-                        <label
-                            class="block font-mono text-xs font-bold uppercase text-gray-500 mb-2 group-focus-within:text-black transition-colors">
-                            Kode Pos <span class="text-red-600">*</span>
-                        </label>
-                        <input type="text" name="postal_code"
-                            value="{{ old('postal_code', $address->postal_code ?? '') }}"
-                            class="w-full border border-gray-300 bg-white p-3 text-sm focus:outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a] transition-all rounded-none"
-                            required>
-                    </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-primary/60 uppercase tracking-widest">
+                                    Kota / Kab <span class="text-red-600">*</span>
+                                </label>
+                                <input type="text" name="city" value="{{ old('city', $address->city ?? '') }}" required
+                                    class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-primary/60 uppercase tracking-widest">
+                                    Provinsi <span class="text-red-600">*</span>
+                                </label>
+                                <input type="text" name="province" value="{{ old('province', $address->province ?? '') }}" required
+                                    class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-primary/60 uppercase tracking-widest">
+                                    Kode Pos <span class="text-red-600">*</span>
+                                </label>
+                                <input type="text" name="postal_code" value="{{ old('postal_code', $address->postal_code ?? '') }}" required
+                                    class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-3 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none" />
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3 sm:justify-end pt-2">
+                            <a href="{{ route('addresses.index') }}"
+                                class="inline-flex items-center justify-center rounded-full px-8 py-4 text-xs font-black uppercase tracking-widest border-2 border-primary/20 text-primary hover:bg-primary/5 transition-colors">
+                                Batal
+                            </a>
+                            <button type="submit"
+                                class="inline-flex items-center justify-center rounded-full px-10 py-4 bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform">
+                                {{ isset($address) ? 'Update' : 'Simpan' }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            {{-- ACTION BUTTONS --}}
-            <div class="mt-12 pt-6 border-t border-gray-200 flex items-center justify-between">
-                <a href="{{ route('user.addresses.index') }}"
-                    class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-[#1a1a1a] underline decoration-2 underline-offset-4 transition-colors">
-                    &larr; Batalkan
-                </a>
-
-                <button type="submit"
-                    class="bg-[#1a1a1a] text-white px-10 py-4 text-xs font-bold uppercase tracking-widest hover:bg-[#EB0000] transition-colors rounded-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
-                    {{ isset($address) ? 'Update Data' : 'Simpan Alamat' }}
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
+
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        .fill-1 {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        .lollipop-gradient {
+            background: linear-gradient(135deg, #F42559 0%, #ff8da7 100%);
+        }
+
+        .candy-cane-border {
+            background: repeating-linear-gradient(45deg, #F42559, #F42559 10px, #ffffff 10px, #ffffff 20px);
+        }
+    </style>
 @endsection
