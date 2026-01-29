@@ -2,90 +2,118 @@
 
 @section('title', 'Create Category')
 
+@push('styles')
+    <style type="text/tailwindcss">
+        .form-section-card {
+            @apply bg-white border border-[#f3e7ed] rounded-2xl p-6 shadow-sm;
+        }
+
+        .input-label {
+            @apply block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2;
+        }
+
+        .text-input {
+            @apply w-full border-[#f3e7ed] rounded-lg bg-[#fcfaff] focus:ring-primary focus:border-primary text-sm p-3;
+        }
+    </style>
+@endpush
+
 @section('content')
-<main class="flex-1 flex flex-col items-center py-10 px-4 relative overflow-hidden min-h-screen">
-    {{-- DECORATION BACKGROUND --}}
-    <div class="absolute top-24 left-10 opacity-10 rotate-12 pointer-events-none">
-        <span class="material-symbols-outlined text-[120px] text-primary">category</span>
-    </div>
-    <div class="absolute bottom-32 right-10 opacity-10 -rotate-12 pointer-events-none">
-        <span class="material-symbols-outlined text-[100px] text-primary">sell</span>
-    </div>
-
-    <div class="w-full max-w-[760px] z-10">
-        {{-- BREADCRUMBS --}}
-        <div class="flex flex-wrap gap-2 px-4 mb-6">
-            <a class="text-primary/60 text-sm font-medium hover:text-primary" href="{{ route('admin.dashboard') }}">Admin</a>
-            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
-            <a class="text-primary/60 text-sm font-medium hover:text-primary" href="{{ route('admin.categories.index') }}">Categories</a>
-            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
-            <span class="text-primary text-sm font-bold">Create</span>
+<header class="lg:sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-[#f3e7ed] px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                <a class="hover:text-primary" href="{{ route('admin.categories.index') }}">Categories</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span>Add New</span>
+            </div>
+            <h1 class="text-3xl font-bold serif-text">Create New Category</h1>
         </div>
 
-        {{-- HEADER --}}
-        <div class="mb-8">
-            <h1 class="text-[#181113] tracking-tight text-4xl font-black leading-tight text-center">Create a New Category!</h1>
-            <p class="text-primary/70 text-center mt-2 font-medium">Keep the jar organized 🫙✨</p>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
+            <a href="{{ route('admin.categories.index') }}"
+                class="w-full sm:w-auto text-center px-6 py-2.5 rounded-lg border border-[#f3e7ed] text-sm font-bold hover:bg-gray-50 transition-colors">
+                Cancel
+            </a>
+            <button form="categoryForm" type="submit"
+                class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:opacity-90 shadow-lg shadow-primary/20 transition-all">
+                Save Category
+            </button>
         </div>
+    </div>
+</header>
 
-        {{-- FORM CONTAINER --}}
-        <div class="bg-white rounded-[3rem] border-[6px] border-primary shadow-2xl p-8 md:p-12 mb-20 relative">
-            <form method="POST" enctype="multipart/form-data" action="{{ route('admin.categories.store') }}" class="space-y-8">
-                @csrf
+<main class="p-4 sm:p-6 lg:p-8">
+    @if ($errors->any())
+        <div class="mb-6 bg-white border border-red-200 rounded-2xl p-4">
+            <p class="text-sm font-bold text-red-600 mb-2">Please fix the errors below:</p>
+            <ul class="text-sm text-red-600 list-disc pl-5 space-y-1">
+                @foreach ($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-                <div class="flex flex-col gap-2">
-                    <label class="flex items-center gap-2 text-[#181113] text-base font-bold pl-2">
-                        Category Name
-                        <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">sell</span>
-                    </label>
-                    <input type="text" name="name" value="{{ old('name') }}" required autofocus
-                        class="w-full rounded-full border-2 border-primary/10 bg-primary/5 focus:border-primary focus:ring-0 h-14 px-6 text-[#181113] placeholder:text-primary/30 font-medium transition-all"
-                        placeholder="Snacks & Candy" />
+    <form id="categoryForm" method="POST" enctype="multipart/form-data" action="{{ route('admin.categories.store') }}">
+        @csrf
 
-                    @error('name')
-                        <p class="text-sm font-bold text-primary">{{ $message }}</p>
-                    @enderror
-                </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-8">
+                <section class="form-section-card">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">info</span>
+                        Category Information
+                    </h3>
+                    <div>
+                        <label class="input-label" for="category-name">Category Name</label>
+                        <input id="category-name" type="text" name="name" value="{{ old('name') }}" required autofocus
+                            class="text-input" placeholder="e.g. Skincare" />
+                    </div>
+                </section>
 
-                <div class="flex flex-col gap-2">
-                    <label class="flex items-center gap-2 text-[#181113] text-base font-bold pl-2">
-                        Category Photo
-                        <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">photo_camera</span>
-                    </label>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-4 items-start">
-                        <div class="w-40 h-40 rounded-[2rem] border-4 border-primary/10 bg-primary/5 overflow-hidden flex items-center justify-center">
+                <section class="form-section-card">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">image</span>
+                        Category Media
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-6 items-start">
+                        <div class="w-40 h-40 rounded-xl border border-[#f3e7ed] bg-[#fcfaff] overflow-hidden flex items-center justify-center">
                             <img id="categoryImagePreview" class="hidden w-full h-full object-cover" alt="Preview" />
-                            <span id="categoryImagePlaceholder" class="text-primary/50 font-bold text-xs">No photo</span>
+                            <span id="categoryImagePlaceholder" class="text-gray-400 text-xs font-bold">No photo</span>
                         </div>
 
-                        <div class="space-y-2">
-                            <input id="categoryImageInput" type="file" name="image" accept="image/*"
-                                class="block w-full text-sm font-bold text-primary file:mr-4 file:rounded-full file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-primary hover:file:bg-primary/20" />
-                            @error('image')
-                                <p class="text-sm font-bold text-primary">{{ $message }}</p>
-                            @enderror
-                            <p class="text-xs font-bold text-primary/50">PNG/JPG/WEBP · max 5MB</p>
+                        <div>
+                            <label class="input-label" for="categoryImageInput">Upload Image</label>
+                            <input id="categoryImageInput" type="file" name="image" accept="image/*" class="text-input p-2" />
+                            <p class="mt-2 text-xs text-gray-500 font-medium">PNG/JPG/WEBP · max 5MB</p>
                         </div>
                     </div>
-                </div>
+                </section>
+            </div>
 
-                <hr class="border-primary/10 border-2 border-dashed rounded-full my-8">
-
-                <div class="flex flex-col sm:flex-row gap-3 justify-end">
-                    <a href="{{ route('admin.categories.index') }}"
-                        class="inline-flex items-center justify-center px-6 h-12 rounded-full border-2 border-primary/15 bg-white text-primary font-black hover:bg-primary/5 transition-colors">
-                        Cancel
-                    </a>
-                    <button type="submit"
-                        class="inline-flex items-center justify-center gap-2 px-6 h-12 rounded-full bg-primary text-white font-extrabold hover:opacity-95 active:scale-[0.99] transition-all">
-                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">save</span>
-                        Save
-                    </button>
-                </div>
-            </form>
+            <div class="space-y-8">
+                <section class="form-section-card">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">category</span>
+                        Notes
+                    </h3>
+                    <p class="text-sm text-gray-600">Slug will be generated automatically from the name.</p>
+                </section>
+            </div>
         </div>
-    </div>
+
+        <div class="mt-12 pt-8 border-t border-[#f3e7ed] flex justify-end gap-4">
+            <a href="{{ route('admin.categories.index') }}"
+                class="px-6 py-2.5 rounded-lg border border-[#f3e7ed] text-sm font-bold hover:bg-gray-50 transition-colors">
+                Cancel
+            </a>
+            <button type="submit"
+                class="px-8 py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:opacity-90 shadow-lg shadow-primary/20">
+                Save Category
+            </button>
+        </div>
+    </form>
 </main>
 
 <script>

@@ -1,306 +1,348 @@
 @extends('layouts.app')
 
 @section('content')
-    <style>
-        .glossy-pink {
-            background: linear-gradient(180deg, #ff5e84 0%, #f42559 100%);
-            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), 0 4px 12px rgba(244, 37, 89, 0.3);
+    @php
+        $cartItems = collect($cart ?? []);
+        $itemsCount = (int) $cartItems->sum(fn ($i) => (int) ($i['qty'] ?? 0));
+        $subtotal = (int) $cartItems->sum(fn ($i) => (int) ($i['price'] ?? 0) * (int) ($i['qty'] ?? 0));
+    @endphp
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ee2b8c",
+                        "background-light": "#f8f6f7",
+                        "background-dark": "#221019",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
         }
 
-        .candy-stripe {
-            background-color: #ffffff;
-            background-image: repeating-linear-gradient(45deg, #fffcfd, #fffcfd 10px, #fff1f4 10px, #fff1f4 20px);
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
         }
 
-        .bubbly-border {
-            border: 3px solid #f42559;
+        .serif-text {
+            font-family: "Playfair Display", serif;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
-    <main class="flex-1 max-w-[1280px] mx-auto w-full px-6 py-8">
-        <div class="flex items-center gap-2 mb-6">
-            <a class="text-primary/60 text-sm font-semibold hover:text-primary transition-colors"
-                href="{{ route('home') }}">Home</a>
-            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
-            <span class="text-primary text-sm font-extrabold">Your Sweet Cart</span>
+    <main class="flex-grow max-w-[1440px] mx-auto w-full px-6 lg:px-20 py-12">
+        <div class="flex flex-col gap-4 mb-10">
+            <h1 class="text-4xl font-bold serif-text">Shopping Bag</h1>
+            <p class="text-gray-500 dark:text-gray-400">You have {{ $itemsCount }} item(s) in your bag</p>
         </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div class="lg:col-span-8 flex flex-col gap-8">
+                @if(session('success'))
+                    <div class="rounded-xl border border-[#f3e7ed] dark:border-[#3d2030] bg-white/70 dark:bg-[#1b0d14]/40 px-5 py-4 text-sm">
+                        <span class="font-bold text-primary">{{ session('success') }}</span>
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="rounded-xl border border-[#f3e7ed] dark:border-[#3d2030] bg-white/70 dark:bg-[#1b0d14]/40 px-5 py-4 text-sm">
+                        <span class="font-bold text-red-600">{{ session('error') }}</span>
+                    </div>
+                @endif
 
-        <div class="flex items-center gap-3 mb-8">
-            <h1 class="text-3xl font-extrabold text-[#181113] dark:text-white">Your Shopping Cart</h1>
-            <span class="text-primary/50 text-xl font-bold">({{ collect($cart)->sum('qty') }} items)</span>
-            <span class="material-symbols-outlined text-primary animate-pulse">favorite</span>
-        </div>
+                @forelse($cartItems as $variantId => $item)
+                    @php
+                        $image = $item['image'] ?? null;
+                        $imgSrc = $image
+                            ? asset('storage/' . ltrim($image, '/'))
+                            : ('https://ui-avatars.com/api/?name=' . urlencode((string) ($item['product_name'] ?? 'Item')) . '&background=f3e7ed&color=1b0d14');
+                        $qty = (int) ($item['qty'] ?? 1);
+                        $price = (int) ($item['price'] ?? 0);
+                    @endphp
 
-        <div class="flex flex-col lg:flex-row gap-10">
-            <div class="flex-1 space-y-6">
-                @forelse ($cart as $item)
-                    <div
-                        class="bubbly-border bg-white dark:bg-[#2d1a1e] rounded-xl p-6 shadow-xl flex flex-col sm:flex-row gap-6 items-center">
-                        {{-- Product Image --}}
-                        <div class="w-32 h-32 bg-center bg-no-repeat bg-cover rounded-xl shrink-0"
-                            style='background-image: url("{{ $item['image'] ? asset('storage/' . $item['image']) : 'https://lh3.googleusercontent.com/aida-public/AB6AXuBYE3_laJfR0Z7-ogZu_ZEV9oon6E7ikAKkPb97Ij5f4BWlw171zeoh9iRVpr2n5MCD7FX7Da55l8_fcUsbsnllSroBxlLggDnIwr6dhp2g7SkPuUFdSQHrIBN_PhaRCBLgMewCZcX_1dBb7E_tnZ59F7eXWU4fMK65KaNulooM6dhuXmnrEgsFTYPr0UvVjZjHyq3AKF4JAd6VRy_UACvMOrjDWvBDW8bIh43DOr9IVxpfVjxWDBc9IQfc5frVh0yduPfohGhWzLI' }}");'>
+                    <div class="flex gap-6 pb-8 border-b border-[#f3e7ed] dark:border-[#3d2030]">
+                        <div class="w-32 h-40 bg-[#f8f6f7] dark:bg-[#2d1622] rounded-xl overflow-hidden flex-shrink-0">
+                            <img src="{{ $imgSrc }}" alt="{{ $item['product_name'] ?? 'Item' }}" class="w-full h-full object-cover" loading="lazy" />
                         </div>
 
-                        <div class="flex flex-col flex-1 gap-2 w-full">
-                            <div class="flex justify-between items-start">
+                        <div class="flex flex-col justify-between flex-grow py-1">
+                            <div class="flex justify-between items-start gap-4">
                                 <div>
-                                    <span class="text-primary text-xs font-bold uppercase tracking-widest">Sweet
-                                        Choice</span>
-                                    <h3 class="text-xl font-extrabold text-[#181113] dark:text-white uppercase">
-                                        {{ $item['product_name'] }}</h3>
-                                    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Variant ID:
-                                        {{ $item['variant_id'] }}</p>
+                                    <h3 class="text-lg font-bold">{{ $item['product_name'] ?? 'Item' }}</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">Variant ID: {{ $variantId }}</p>
                                 </div>
-                                <span class="text-2xl font-extrabold text-primary">Rp
-                                    {{ number_format($item['price']) }}</span>
+                                <form method="POST" action="{{ route('cart.remove', $variantId) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-gray-400 hover:text-primary transition-colors" aria-label="Remove">
+                                        <span class="material-symbols-outlined">close</span>
+                                    </button>
+                                </form>
                             </div>
 
-                            <div class="flex items-center justify-between mt-4">
-                                <form action="{{ route('cart.update') }}" method="POST"
-                                    class="flex items-center gap-3 bg-primary/5 p-2 rounded-full">
+                            <div class="flex justify-between items-center">
+                                <form method="POST" action="{{ route('cart.update') }}" class="flex items-center border border-[#f3e7ed] dark:border-[#3d2030] rounded-lg overflow-hidden">
                                     @csrf
-                                    <input type="hidden" name="variant_id" value="{{ $item['variant_id'] }}">
-
-                                    {{-- Decrease Qty --}}
-                                    <button name="qty" value="{{ $item['qty'] - 1 }}"
-                                        class="w-8 h-8 rounded-full bg-white shadow-sm border border-primary/20 text-primary font-black hover:scale-110 transition-transform active:scale-90 flex items-center justify-center">
-                                        <span class="material-symbols-outlined text-sm">remove</span>
+                                    <input type="hidden" name="variant_id" value="{{ $variantId }}" />
+                                    <button type="button" class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-[#3d2030] transition-colors" data-qty-minus>
+                                        <span class="material-symbols-outlined text-lg leading-none">remove</span>
                                     </button>
-
-                                    <span
-                                        class="text-lg font-bold text-[#181113] dark:text-white px-2">{{ $item['qty'] }}</span>
-
-                                    {{-- Increase Qty --}}
-                                    <button name="qty" value="{{ $item['qty'] + 1 }}"
-                                        class="w-8 h-8 rounded-full bg-primary text-white shadow-sm font-black hover:scale-110 transition-transform active:scale-90 flex items-center justify-center">
-                                        <span class="material-symbols-outlined text-sm">add</span>
+                                    <input
+                                        name="qty"
+                                        value="{{ $qty }}"
+                                        min="1"
+                                        type="number"
+                                        class="w-16 text-center font-medium bg-transparent border-0 focus:ring-0"
+                                        data-qty-input />
+                                    <button type="button" class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-[#3d2030] transition-colors" data-qty-plus>
+                                        <span class="material-symbols-outlined text-lg leading-none">add</span>
                                     </button>
                                 </form>
-
-                                {{-- Remove Button --}}
-                                <form action="{{ route('cart.remove', $item['variant_id']) }}" method="POST">
-                                    @csrf @method('DELETE')
-                                    <button type="submit"
-                                        class="flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors font-bold text-sm">
-                                        <span class="material-symbols-outlined text-lg">delete</span>
-                                        Remove
-                                    </button>
-                                </form>
+                                <p class="font-bold text-lg">Rp {{ number_format((float) $price, 0, ',', '.') }}</p>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="text-center py-20 bg-primary/5 rounded-3xl border-2 border-dashed border-primary/20">
-                        <span class="material-symbols-outlined text-6xl text-primary/30 mb-4">shopping_basket</span>
-                        <p class="text-gray-500 font-bold uppercase tracking-widest">Your cart is feeling a bit empty...</p>
-                        <a href="{{ route('home') }}"
-                            class="inline-block mt-6 bg-primary text-white px-10 py-4 rounded-full font-black hover:scale-105 transition-transform">START
-                            SHOPPING</a>
+                    <div class="rounded-2xl border border-[#f3e7ed] dark:border-[#3d2030] bg-white dark:bg-[#1b0d14] p-8 text-center">
+                        <p class="font-bold text-primary">Keranjang masih kosong.</p>
+                        <a href="{{ route('shop.index') }}" class="inline-flex mt-5 bg-primary text-white font-bold px-6 py-3 rounded-full">
+                            Belanja Sekarang
+                        </a>
                     </div>
                 @endforelse
 
-                @if (count($cart) > 0)
-                    <a class="flex items-center justify-center gap-2 mt-8 text-primary font-black hover:underline group"
-                        href="{{ route('home') }}">
-                        <span
-                            class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
-                        Back to Candy Shop
-                    </a>
+                @if($cartItems->isNotEmpty())
+                    <div class="flex items-center gap-4 py-4 text-sm text-gray-500">
+                        <span class="material-symbols-outlined text-primary">local_shipping</span>
+                        <span>Checkout akan tersedia setelah login dan pilih alamat.</span>
+                    </div>
                 @endif
             </div>
-
-            <div class="w-full lg:w-96">
+            <div class="lg:col-span-4">
                 <div
-                    class="candy-stripe dark:candy-stripe dark:invert-[0.05] rounded-xl bubbly-border shadow-2xl p-8 flex flex-col gap-6 sticky top-28">
-                    <div class="flex items-center gap-2 border-b-2 border-dashed border-primary/20 pb-4">
-                        <span class="material-symbols-outlined text-primary text-3xl">shopping_cart_checkout</span>
-                        <h2 class="text-2xl font-black text-[#181113]">Treat Summary</h2>
-                    </div>
+                    class="bg-white dark:bg-[#1b0d14] rounded-2xl p-8 border border-[#f3e7ed] dark:border-[#3d2030] sticky top-32">
+                    <h2 class="text-2xl font-bold serif-text mb-6">Order Summary</h2>
 
-                    {{-- Address Selector --}}
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-primary">Shipping To:</label>
-                        <div class="relative">
-                            <select id="addressSelector"
-                                class="w-full appearance-none bg-white/50 border-2 border-primary/10 rounded-xl px-4 py-3 text-sm font-bold focus:ring-primary focus:border-primary outline-none">
-                                <option value="">-- SELECT ADDRESS --</option>
-                                @foreach ($addresses as $addr)
-                                    <option value="{{ $addr->id }}">{{ $addr->name }} ({{ $addr->city }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            <span
-                                class="material-symbols-outlined absolute right-3 top-3 text-primary pointer-events-none">expand_more</span>
-                        </div>
-                        <div class="flex justify-end">
-                            @php
-                                $routeAdd = auth()->user()->hasRole('admin')
-                                    ? route('admin.addresses.create')
-                                    : route('user.addresses.create');
-                            @endphp
-                            <a href="{{ $routeAdd }}" class="text-[10px] font-black text-primary underline">+ NEW
-                                ADDRESS</a>
-                        </div>
-                    </div>
+                    @auth
+                        @php
+                            $addressCreateUrl = auth()->user()->hasRole('admin')
+                                ? route('admin.addresses.create')
+                                : (\Illuminate\Support\Facades\Route::has('addresses.create') ? route('addresses.create') : url('/addresses/create'));
+                        @endphp
 
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center text-[#181113] font-semibold">
-                            <span>Items Total</span>
-                            <span>Rp {{ number_format(collect($cart)->sum(fn($i) => $i['price'] * $i['qty'])) }}</span>
-                        </div>
-                        <div class="flex justify-between items-center text-primary font-bold">
-                            <span>Delivery</span>
-                            <span class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">local_shipping</span> FREE
-                            </span>
-                        </div>
-                    </div>
+                        <div class="mb-6">
+                            <p class="text-xs font-bold uppercase tracking-widest mb-3 text-gray-400">Shipping Address</p>
 
-                    <div class="border-t-2 border-dashed border-primary/20 pt-6">
-                        <div class="flex justify-between items-end">
-                            <span class="text-lg font-bold text-[#181113]">Total Price</span>
-                            <div class="flex flex-col items-end">
-                                <div class="flex items-center gap-1 text-primary">
-                                    <span class="material-symbols-outlined text-xs">favorite</span>
-                                    <span class="text-3xl font-black tracking-tight">
-                                        Rp {{ number_format(collect($cart)->sum(fn($i) => $i['price'] * $i['qty'])) }}
-                                    </span>
-                                    <span class="material-symbols-outlined text-xs">favorite</span>
+                            @if(($addresses ?? collect())->isNotEmpty())
+                                <select
+                                    id="addressSelect"
+                                    class="w-full form-select h-12 border-[#e7cfdb] dark:border-[#3d2030] rounded-lg bg-transparent focus:ring-primary focus:border-primary text-sm">
+                                    @foreach($addresses as $addr)
+                                        <option value="{{ $addr->id }}">
+                                            {{ $addr->name }} — {{ $addr->city }} ({{ $addr->postal_code }})
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <a
+                                    href="{{ $addressCreateUrl }}"
+                                    class="inline-flex mt-3 text-sm font-bold text-primary hover:underline">
+                                    + Tambah alamat
+                                </a>
+                            @else
+                                <div class="rounded-lg border border-[#f3e7ed] dark:border-[#3d2030] p-4 text-sm text-gray-500">
+                                    Belum ada alamat. Tambahkan alamat untuk checkout.
                                 </div>
-                                <span class="text-[10px] font-bold text-primary uppercase">Tax Included</span>
-                            </div>
+                                <a
+                                    href="{{ $addressCreateUrl }}"
+                                    class="inline-flex mt-3 bg-primary text-white font-bold px-4 py-2 rounded-lg text-sm">
+                                    Tambah alamat
+                                </a>
+                            @endif
+                        </div>
+                    @endauth
+
+                    <div class="flex flex-col gap-4 text-sm mb-6 pb-6 border-b border-[#f3e7ed] dark:border-[#3d2030]">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
+                            <span class="font-bold">Rp {{ number_format((float) $subtotal, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">Estimated Shipping</span>
+                            <span class="font-bold">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">Tax</span>
+                            <span class="font-bold text-gray-400">Calculated at checkout</span>
                         </div>
                     </div>
-
-                    <button id="payButton" type="button" {{ empty($cart) ? 'disabled' : '' }}
-                        class="glossy-pink w-full py-5 rounded-full text-white text-xl font-black tracking-wide flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 group shadow-lg disabled:opacity-50">
-                        <span
-                            class="material-symbols-outlined text-3xl group-hover:rotate-45 transition-transform">icecream</span>
-                        PROCEED TO CHECKOUT
-                    </button>
-
-                    <div class="flex flex-col items-center gap-2 text-primary/60 font-bold text-xs text-center">
-                        <div class="flex items-center gap-4">
-                            <span class="material-symbols-outlined">verified_user</span>
-                            <span>Sweet & Secure Payment</span>
+                    <div class="mb-8">
+                        <p class="text-xs font-bold uppercase tracking-widest mb-3 text-gray-400">Promo Code</p>
+                        <div class="flex gap-2">
+                            <input
+                                class="flex-1 form-input h-12 border-[#e7cfdb] dark:border-[#3d2030] rounded-lg bg-transparent focus:ring-primary focus:border-primary text-sm"
+                                placeholder="Enter code" type="text" />
+                            <button
+                                class="px-6 h-12 border border-[#1b0d14] dark:border-white rounded-lg text-sm font-bold hover:bg-[#1b0d14] hover:text-white dark:hover:bg-white dark:hover:text-[#1b0d14] transition-all">Apply</button>
                         </div>
+                    </div>
+                    <div class="flex justify-between items-center mb-8">
+                        <span class="text-lg font-bold">Total</span>
+                        <span class="text-2xl font-bold text-primary">Rp {{ number_format((float) $subtotal, 0, ',', '.') }}</span>
+                    </div>
+
+                    @if($cartItems->isEmpty())
+                        <a href="{{ route('shop.index') }}"
+                            class="w-full bg-primary text-white font-bold py-4 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mb-4">
+                            Browse Products
+                            <span class="material-symbols-outlined text-xl">arrow_forward</span>
+                        </a>
+                    @else
+                        @auth
+                            <button
+                                id="checkoutButton"
+                                type="button"
+                                class="w-full bg-primary text-white font-bold py-4 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mb-4"
+                                {{ (($addresses ?? collect())->isEmpty()) ? 'disabled' : '' }}>
+                                Proceed to Checkout
+                                <span class="material-symbols-outlined text-xl">arrow_forward</span>
+                            </button>
+                        @else
+                            <a href="{{ route('login') }}"
+                                class="w-full bg-primary text-white font-bold py-4 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mb-4">
+                                Login untuk Checkout
+                                <span class="material-symbols-outlined text-xl">arrow_forward</span>
+                            </a>
+                        @endauth
+                    @endif
+                    <div class="flex flex-col gap-4 mt-6">
+                        <div class="flex items-center justify-center gap-4 grayscale opacity-40">
+                            <img alt="Visa" class="h-4"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2Ri5fo9bBwWTFlxuXojUthe2NrTmdGtYVnOosd2258ig85fFXA5v_8v1c3_b4cBN8xm6EdYcuPjdLl3dHZsYJZJWZ_6mbs4Ua891wJ0SNqfmQPUW_jI7Tk1Ln-DmgmJ8KZjrwECZl2DB4yzFm16FPcF-AGt3IcbS2E_CclwizkqFK9HUGkOdWhNZr1ZlfpD7AhoTtsvhlQA1N188IC4zO30-UZ0lySejToxTxqnxb-wvj0uZmphuHffz-a3ujHU9-Aykf9WSkE8k" />
+                            <img alt="Mastercard" class="h-6"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmba9Rr4lDh6rqHb-hkQl2Gc1Q7p9v6tYcG0U3wl5Em5rttMegw8ge-2IAhQBvL5XWBv--qKlNUnJSHozcbNFUv3RHKxAForOy5pzqKgC3W_yH00WXSevNdnBXLLyBhuKjvyKwmwW8aqmm_B4aNHtv4CgHsgRiH7n2AgPxSGR_jXerX4H3A5WoKkdXcthuGei65gIUs0NXmpHjdUS31i6pcifVc6v8VdE4i8n0jjJxwV-tiUNACM2lEGu_V0jRJzUhgRuPgSC3H1A" />
+                            <img alt="PayPal" class="h-4"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBoGXmM-COmJqPzy9AB_UeTuwt3NAHrt14voDQOdkYKnCRCJdri5G23PXnBGxwZoniRNKWjmuPAVAB99Dm4p03DABhSAj9OKFnvBLC9fraZ-LDLQ87AxXJ0SpqySDB9oo49ANnCGLLFkC6XiB39SMmX5eriGxvXeugBtNgl7KP6UePHX-vffuHMi8wZEU8SOG9GtAZIwTVchYgKEdsBZGpFiKRJnHYAAbmewZ8UwDJWl3GVVMXmPoJKyI-7ZZZwRaHfOEHT-Goyfg" />
+                        </div>
+                        <p class="text-center text-[10px] text-gray-400 uppercase tracking-widest">Secure encrypted
+                            checkout</p>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="mt-20">
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-2xl font-black text-[#181113] dark:text-white">You Might Also Crave...</h2>
-                <a class="text-primary font-bold text-sm" href="{{ route('shop.index') }}">View all snacks →</a>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                @forelse (($recommendedProducts ?? collect()) as $p)
-                    @php
-                        $img = $p->images->first();
-                        $minPrice = $p->variants_min_price ?? $p->variants?->min('price');
-                    @endphp
-
-                    <a href="{{ route('product.show', $p->slug) }}"
-                        class="group bg-white dark:bg-[#2d1a1e] rounded-xl p-4 shadow-md hover:shadow-xl transition-all border-b-4 border-primary/20 hover:border-primary">
-                        <div class="aspect-square bg-center bg-no-repeat bg-cover rounded-xl mb-4 group-hover:scale-105 transition-transform"
-                            @if ($img)
-                                style='background-image: url("{{ asset('storage/' . ltrim($img->image, '/')) }}")'
-                            @else
-                                style='background-image: radial-gradient(circle at top, rgba(244,37,89,0.25), rgba(255,143,177,0.08)), linear-gradient(135deg, rgba(244,37,89,0.12), rgba(255,255,255,0.0))'
-                            @endif
-                        >
-                        </div>
-
-                        <h4 class="font-bold text-[#181113] dark:text-white mb-1 line-clamp-2">{{ $p->name }}</h4>
-
-                        <div class="flex justify-between items-center">
-                            <span class="text-primary font-black">
-                                @if (is_null($minPrice))
-                                    —
-                                @else
-                                    Rp {{ number_format($minPrice, 0, ',', '.') }}
-                                @endif
-                            </span>
-                            <span
-                                class="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                                <span class="material-symbols-outlined text-sm">open_in_new</span>
-                            </span>
-                        </div>
-                    </a>
-                @empty
-                    <div class="col-span-full text-center text-gray-500 font-bold">
-                        Tambahkan produk dulu untuk melihat rekomendasi sesuai kategori.
-                    </div>
-                @endforelse
-            </div>
-        </div>
     </main>
 
-    {{-- MIDTRANS SNAP JS --}}
-    @php
-        $snapJsUrl = config('services.midtrans.isProduction')
-            ? 'https://app.midtrans.com/snap/snap.js'
-            : 'https://app.sandbox.midtrans.com/snap/snap.js';
-    @endphp
-    <script src="{{ $snapJsUrl }}" data-client-key="{{ config('services.midtrans.clientKey') }}"></script>
-
     <script>
-        document.getElementById('payButton')?.addEventListener('click', function(e) {
-            e.preventDefault();
-            const addressId = document.getElementById('addressSelector').value;
+        (function () {
+            document.querySelectorAll('form[action$="/cart/update"]').forEach(function (form) {
+                var input = form.querySelector('[data-qty-input]');
+                var minus = form.querySelector('[data-qty-minus]');
+                var plus = form.querySelector('[data-qty-plus]');
 
-            if (!addressId) {
-                (window.__showToast || window.showToast || function(m){ console.warn(m); })('Please select the shipping address first.', 'error');
-                return;
-            }
+                function submit() {
+                    form.submit();
+                }
 
-            const btn = this;
-            const originalText = btn.innerHTML;
-            btn.innerHTML =
-                `<span class="animate-spin material-symbols-outlined">progress_activity</span> PROCESSING...`;
-            btn.disabled = true;
+                function setQty(nextQty) {
+                    var v = Math.max(1, parseInt(nextQty || '1', 10));
+                    if (input) input.value = String(v);
+                }
 
-            fetch("{{ route('checkout.store') }}", {
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
-                    },
-                    body: JSON.stringify({
-                        address_id: addressId
-                    })
-                })
-                .then(async res => {
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error || 'Server Error');
-                    return data;
-                })
-                .then(data => {
-                    snap.pay(data.snap_token, {
-                        onSuccess: function(result) {
-                            window.location.href = data.order_url;
-                        },
-                        onPending: function(result) {
-                            window.location.href = data.order_url;
-                        },
-                        onError: function(result) {
-                            window.location.href = data.order_url;
-                        },
-                        onClose: function() {
-                            window.location.href = data.order_url;
-                        }
-                    });
-                })
-                .catch(err => {
-                    (window.__showToast || window.showToast || function(m){ console.warn(m); })(err.message || 'Terjadi kesalahan.', 'error');
-                    resetButton();
+                if (minus) minus.addEventListener('click', function () {
+                    setQty((input && input.value) ? (parseInt(input.value, 10) - 1) : 1);
+                    submit();
                 });
-
-            function resetButton() {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        });
+                if (plus) plus.addEventListener('click', function () {
+                    setQty((input && input.value) ? (parseInt(input.value, 10) + 1) : 2);
+                    submit();
+                });
+                if (input) input.addEventListener('change', function () {
+                    submit();
+                });
+            });
+        })();
     </script>
+
+    @auth
+        @if($cartItems->isNotEmpty() && ($addresses ?? collect())->isNotEmpty())
+            @php
+                $snapJsUrl = config('services.midtrans.isProduction')
+                    ? 'https://app.midtrans.com/snap/snap.js'
+                    : 'https://app.sandbox.midtrans.com/snap/snap.js';
+            @endphp
+            <script src="{{ $snapJsUrl }}" data-client-key="{{ config('services.midtrans.clientKey') }}"></script>
+
+            <script>
+                (function () {
+                    var btn = document.getElementById('checkoutButton');
+                    var addressSelect = document.getElementById('addressSelect');
+                    if (!btn) return;
+
+                    btn.addEventListener('click', function () {
+                        if (!addressSelect || !addressSelect.value) {
+                            alert('Pilih alamat dulu.');
+                            return;
+                        }
+                        if (typeof snap === 'undefined' || !snap.pay) {
+                            alert('Midtrans Snap belum siap. Cek MIDTRANS clientKey dan koneksi internet.');
+                            return;
+                        }
+
+                        btn.disabled = true;
+                        var original = btn.innerHTML;
+                        btn.innerHTML = 'Processing...';
+
+                        fetch("{{ route('checkout.store') }}", {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ address_id: addressSelect.value })
+                        }).then(async function (res) {
+                            var data = await res.json();
+                            if (!res.ok) throw new Error(data.error || 'Server Error');
+                            return data;
+                        }).then(function (data) {
+                            snap.pay(data.snap_token, {
+                                onSuccess: function () { window.location.href = data.order_url; },
+                                onPending: function () { window.location.href = data.order_url; },
+                                onError: function () { window.location.href = data.order_url; },
+                                onClose: function () {
+                                    btn.disabled = false;
+                                    btn.innerHTML = original;
+                                }
+                            });
+                        }).catch(function (err) {
+                            alert(err.message || 'Terjadi kesalahan.');
+                            btn.disabled = false;
+                            btn.innerHTML = original;
+                        });
+                    });
+                })();
+            </script>
+        @endif
+    @endauth
 @endsection

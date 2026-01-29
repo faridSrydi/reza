@@ -3,329 +3,328 @@
 @section('title', $product->name)
 
 @section('content')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
     @php
-        $minPrice = $product->variants->min('price');
+        $images = $product->images ?? collect();
+        $mainImage = $images->first();
+        $mainImageUrl = $mainImage
+            ? asset('storage/' . ltrim($mainImage->image, '/'))
+            : ('https://ui-avatars.com/api/?name=' . urlencode($product->name) . '&background=f3e7ed&color=1b0d14');
+
+        $variants = $product->variants ?? collect();
+        $defaultVariant = $variants->firstWhere('stock', '>', 0) ?? $variants->first();
+        $defaultVariantId = $defaultVariant?->id;
+        $defaultVariantPrice = $defaultVariant?->price;
+        $defaultVariantStock = $defaultVariant?->stock;
+
+        $categoryName = $product->category?->name;
     @endphp
 
-    <main class="flex-1 max-w-[1280px] mx-auto w-full px-6 py-8">
-        <div class="flex flex-wrap items-center gap-2 pb-6">
-            <a class="text-primary/60 text-sm font-semibold hover:text-primary" href="/">Home</a>
-            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
-            <a class="text-primary/60 text-sm font-semibold hover:text-primary"
-                href="{{ route('home', ['category' => $product->category->slug]) }}">
-                {{ $product->category->name }}
-            </a>
-            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
-            <span class="text-primary text-sm font-bold">{{ $product->name }}</span>
-        </div>
+    <style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div class="flex flex-col gap-4">
-                <div
-                    class="swiper productMainSwiper relative w-full">
-                    <div class="swiper-wrapper">
-                        @foreach ($product->images as $image)
-                            <div class="swiper-slide">
-                                <div class="relative z-[1] w-full flex items-center justify-center p-3 sm:p-4">
-                                    <div
-                                        class="relative inline-flex items-center justify-center rounded-3xl overflow-hidden bg-white dark:bg-white/5 shadow-xl border-4 border-primary/5">
-                                        <div
-                                            class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent z-0">
-                                        </div>
-                                        <img src="{{ asset('storage/' . $image->image) }}"
-                                            class="relative z-[1] w-auto h-auto max-w-[90vw] md:max-w-[520px] lg:max-w-[620px] max-h-[70vh] object-contain"
-                                            alt="{{ $product->name }}">
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
+        .material-symbols-outlined.fill-1 {
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
 
-                    @if ($product->images->count() > 1)
-                        <button type="button"
-                            class="product-swiper-prev group absolute left-3 top-1/2 -translate-y-1/2 z-10 h-11 w-11 sm:h-12 sm:w-12 rounded-2xl border-2 border-primary/15 bg-white/80 backdrop-blur-md shadow-lg shadow-primary/15 hover:bg-primary hover:text-white transition-all active:scale-95"
-                            aria-label="Previous image">
-                            <span class="material-symbols-outlined text-primary group-hover:text-white">chevron_left</span>
-                        </button>
-                        <button type="button"
-                            class="product-swiper-next group absolute right-3 top-1/2 -translate-y-1/2 z-10 h-11 w-11 sm:h-12 sm:w-12 rounded-2xl border-2 border-primary/15 bg-white/80 backdrop-blur-md shadow-lg shadow-primary/15 hover:bg-primary hover:text-white transition-all active:scale-95"
-                            aria-label="Next image">
-                            <span class="material-symbols-outlined text-primary group-hover:text-white">chevron_right</span>
-                        </button>
-                    @endif
-                </div>
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+        }
 
-                <div class="swiper productThumbSwiper w-full">
-                    <div class="swiper-wrapper">
-                        @foreach ($product->images as $image)
-                            <div
-                                class="swiper-slide !w-[72px] !h-[72px] sm:!w-[84px] sm:!h-[84px] rounded-2xl border-2 border-transparent bg-white/70 dark:bg-white/10 p-2 cursor-pointer transition-all shadow-sm">
-                                <img src="{{ asset('storage/' . $image->image) }}" class="w-full h-full object-contain"
-                                    alt="Thumbnail">
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
+        .serif-text {
+            font-family: "Playfair Display", serif;
+        }
 
-            <div class="flex flex-col gap-8">
-                <div class="relative">
-                    <div class="flex items-start justify-between">
-                        <div class="flex flex-col gap-1">
-                            <p class="text-xs font-bold text-primary/60 uppercase tracking-widest">
-                                {{ $product->category?->name }}
-                            </p>
-                            <h1 class="text-4xl md:text-5xl font-extrabold text-primary tracking-tight leading-tight">
-                                {{ $product->name }}
-                            </h1>
-                        </div>
-                        <div class="shrink-0 flex flex-col items-end gap-3">
-                            <button type="button"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-primary/15 bg-white/70 dark:bg-white/10 backdrop-blur-md hover:border-primary/30 transition-all"
-                                data-wishlist-toggle
-                                data-wishlist-url="{{ route('wishlist.toggle', $product) }}"
-                                data-wishlist-active="{{ ($wishlisted ?? false) ? '1' : '0' }}"
-                                aria-label="Toggle wishlist">
-                                <span class="material-symbols-outlined wishlist-icon {{ ($wishlisted ?? false) ? 'is-on text-primary' : 'text-primary/40' }}">favorite</span>
-                                <span class="text-sm font-extrabold text-primary">Wishlist</span>
-                            </button>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
 
-                            <div class="text-right">
-                                <p class="text-xs font-bold text-primary/60 uppercase tracking-widest">Harga</p>
-                                <div id="display_price" class="text-primary font-extrabold text-2xl leading-none">
-                                @if (is_null($minPrice))
-                                    —
-                                @else
-                                    Rp {{ number_format($minPrice, 0, ',', '.') }}
-                                @endif
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-primary/70 text-lg font-medium mt-4 italic">
-                        "{{ $product->description_short ?? 'Sweet, fluffy, and magically delicious!' }}"</p>
-                </div>
-
-                <form action="{{ route('cart.add') }}" method="POST" class="flex flex-col gap-8">
-                    @csrf
-                    <input type="hidden" name="product_name" value="{{ $product->name }}">
-                    <input type="hidden" id="selected_price" name="price" value="{{ $minPrice ?? 0 }}">
-
-                    <div class="flex flex-col gap-4">
-                        <p class="font-bold uppercase tracking-wider text-sm">Select Variant</p>
-                        <div class="flex flex-wrap gap-4">
-                            @foreach ($product->variants as $variant)
-                                <label
-                                    class="group flex flex-col items-center gap-2 cursor-pointer {{ $variant->stock == 0 ? 'opacity-30' : '' }}">
-                                    <input type="radio" name="variant_id" value="{{ $variant->id }}"
-                                        data-price="{{ $variant->price }}" onchange="updatePrice(this)"
-                                        class="peer sr-only" {{ $variant->stock == 0 ? 'disabled' : 'required' }}>
-
-                                    <div class="size-12 rounded-full border-[3px] border-primary/20 flex items-center justify-center transition-all 
-                                    peer-checked:border-primary peer-checked:bg-primary/10 group-hover:scale-110 macaron-shadow"
-                                        style="background-color: {{ $variant->hex_color ?? '#FCA5A5' }}">
-                                        @if ($variant->stock == 0)
-                                            <span class="text-[8px] text-white font-bold">X</span>
-                                        @endif
-                                    </div>
-                                    <span class="text-[10px] font-bold text-primary uppercase">{{ $variant->size }}</span>
-                                </label>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col gap-4 mt-4">
-                        <div class="flex items-center gap-4">
-                            <div
-                                class="flex items-center bg-white dark:bg-white/10 rounded-full border-2 border-primary/20 p-1">
-                                <button type="button" onclick="this.nextElementSibling.stepDown()"
-                                    class="size-10 flex items-center justify-center rounded-full hover:bg-primary/10 text-primary">
-                                    <span class="material-symbols-outlined">remove</span>
-                                </button>
-                                <input type="number" name="qty" value="1" min="1"
-                                    class="w-12 text-center font-black text-lg bg-transparent border-none focus:ring-0">
-                                <button type="button" onclick="this.previousElementSibling.stepUp()"
-                                    class="size-10 flex items-center justify-center rounded-full hover:bg-primary/10 text-primary">
-                                    <span class="material-symbols-outlined">add</span>
-                                </button>
-                            </div>
-                            <p class="text-sm font-bold text-primary/60 uppercase">
-                                {{ $product->variants->sum('stock') > 0 ? 'In Stock (Limited)' : 'Out of Stock' }}
-                            </p>
-                        </div>
-
-                        <button type="submit" {{ $product->variants->sum('stock') == 0 ? 'disabled' : '' }}
-                            class="bg-primary text-white glossy-button rounded-full py-5 px-8 flex items-center justify-center gap-3 shadow-[0_8px_20px_-5px_rgba(244,37,89,0.5)] active:scale-95 transition-all disabled:opacity-50 disabled:grayscale">
-                            <span class="material-symbols-outlined text-3xl">icecream</span>
-                            <span class="text-xl font-black uppercase tracking-tighter">
-                                {{ $product->variants->sum('stock') == 0 ? 'Sold Out' : 'Add to Shopping Cart' }}
-                            </span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="mt-20">
-            <div class="candy-cane-border rounded-xl p-1 bg-white">
-                <div class="bg-white p-10 rounded-lg">
-                    <div class="flex items-center gap-4 mb-6">
-                        <span class="material-symbols-outlined text-primary text-4xl">celebration</span>
-                        <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900">Detail
-                            {{ $product->name }}</h2>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                        <div class="md:col-span-2 text-lg leading-relaxed text-[#181113]/80">
-                            {!! $product->description !!}
-                        </div>
-                        <div class="bg-primary/5 rounded-xl p-6 border border-primary/20">
-                            <h3 class="font-black uppercase mb-4 text-primary text-sm">Ingredients & Info</h3>
-                            <p class="text-xs font-medium leading-relaxed opacity-70 italic">
-                                {{ $product->ingredients ?? 'Komposisi belum tersedia.' }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <section class="mt-16">
-            <div class="flex items-end justify-between px-2 mb-8">
-                <div>
-                    <h2 class="text-3xl font-black mb-2">Produk yang disarankan</h2>
-                    <p class="text-zinc-500 font-medium">
-                        {{ $product->category?->name ? 'Kategori: ' . $product->category->name : 'Pilihan untuk kamu' }}
-                    </p>
-                </div>
-                <a class="text-primary font-bold hover:underline flex items-center gap-1" href="{{ route('shop.index', ['category' => $product->category?->slug]) }}">
-                    Lihat di Shop <span class="material-symbols-outlined text-sm">open_in_new</span>
-                </a>
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                @forelse (($relatedProducts ?? collect()) as $rp)
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    <nav class="px-6 lg:px-20 py-4 flex items-center gap-2 text-xs uppercase tracking-widest text-gray-500">
+        <a class="hover:text-primary" href="{{ route('home') }}">Home</a>
+        <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <a class="hover:text-primary" href="{{ route('shop.index') }}">Shop</a>
+        @if($categoryName)
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+            <a class="hover:text-primary" href="{{ route('shop.index', ['category' => $product->category?->slug]) }}">{{ $categoryName }}</a>
+        @endif
+        <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <span class="text-gray-900 dark:text-gray-200">{{ $product->name }}</span>
+    </nav>
+    <section class="px-6 lg:px-20 py-6 grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div class="flex gap-4">
+            <div class="flex flex-col gap-4 w-20">
+                @forelse($images as $img)
                     @php
-                        $img = $rp->images->first();
-                        $minPrice = $rp->variants_min_price ?? $rp->variants?->min('price');
-                        $isWishlisted = in_array($rp->id, $wishlistProductIds ?? [], true);
+                        $imgUrl = asset('storage/' . ltrim($img->image, '/'));
+                        $isActive = $loop->first;
                     @endphp
-
-                    <a href="{{ route('product.show', $rp->slug) }}"
-                        class="product-card group relative bg-white p-3 sm:p-4 rounded-xl shadow-xl shadow-primary/5 hover:shadow-primary/10 transition-all border-2 border-transparent hover:border-primary/20">
-                        <button type="button"
-                            class="heart-anim {{ $isWishlisted ? 'opacity-100' : 'opacity-0' }} absolute top-3 right-3 z-10 transition-all duration-300"
-                            data-wishlist-toggle
-                            data-wishlist-url="{{ route('wishlist.toggle', $rp) }}"
-                            data-wishlist-active="{{ $isWishlisted ? '1' : '0' }}"
-                            aria-label="Toggle wishlist">
-                            <span class="wishlist-bubble inline-flex items-center justify-center h-9 w-9 rounded-2xl backdrop-blur-md">
-                                <span class="material-symbols-outlined wishlist-icon {{ $isWishlisted ? 'is-on text-primary' : 'text-primary/40' }}">favorite</span>
-                            </span>
-                        </button>
-
-                        <div class="aspect-square rounded-lg bg-pink-50 mb-4 flex items-center justify-center overflow-hidden">
-                            @if ($img)
-                                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                                    src="{{ asset('storage/' . ltrim($img->image, '/')) }}" alt="{{ $rp->name }}" />
-                            @else
-                                <div class="w-full h-full flex items-center justify-center">
-                                    <span class="text-primary/40 text-xs font-bold uppercase tracking-widest">No Image</span>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-start gap-3">
-                                <h3 class="text-sm sm:text-lg font-extrabold text-gray-800 leading-tight line-clamp-2">
-                                    {{ $rp->name }}
-                                </h3>
-                                <span class="text-primary font-bold whitespace-nowrap text-sm sm:text-base">
-                                    @if (is_null($minPrice))
-                                        —
-                                    @else
-                                        Rp {{ number_format($minPrice, 0, ',', '.') }}
-                                    @endif
-                                </span>
-                            </div>
-
-                            <p class="text-xs font-bold text-primary/60 uppercase tracking-widest">
-                                {{ $rp->category?->name }}
-                            </p>
-
-                            <div class="w-full bg-primary/10 text-primary font-bold py-2.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all flex items-center justify-center gap-2">
-                                <span class="material-symbols-outlined text-lg">open_in_new</span>
-                                View Details
-                            </div>
-                        </div>
-                    </a>
+                    <button
+                        type="button"
+                        class="aspect-square rounded-lg overflow-hidden border {{ $isActive ? 'border-2 border-primary' : 'border-gray-200 hover:border-primary' }} transition-colors"
+                        data-thumb
+                        data-image-url="{{ $imgUrl }}">
+                        <img src="{{ $imgUrl }}" alt="{{ $product->name }}" class="w-full h-full object-cover" loading="lazy" />
+                    </button>
                 @empty
-                    <div class="col-span-full text-center text-zinc-500 font-medium">
-                        Belum ada produk lain di kategori ini.
+                    <div class="aspect-square rounded-lg overflow-hidden border-2 border-primary">
+                        <img src="{{ $mainImageUrl }}" alt="{{ $product->name }}" class="w-full h-full object-cover" loading="lazy" />
                     </div>
                 @endforelse
             </div>
-        </section>
-    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+            <div class="flex-1 aspect-[4/5] rounded-2xl overflow-hidden bg-white shadow-sm">
+                <img id="mainProductImage" src="{{ $mainImageUrl }}" alt="{{ $product->name }}" class="w-full h-full object-cover" />
+            </div>
+        </div>
+        <div class="flex flex-col gap-8">
+            <div class="flex flex-col gap-4">
+                <div class="flex justify-between items-start gap-6">
+                    <h1 class="text-4xl lg:text-5xl font-bold serif-text leading-tight">{{ $product->name }}</h1>
+                    @auth
+                        @php
+                            $inWishlist = in_array($product->id, $wishlistProductIds ?? [], true);
+                        @endphp
+                        <form method="POST" action="{{ route('wishlist.toggle', $product) }}">
+                            @csrf
+                            <button
+                                type="submit"
+                                class="size-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-primary/5 transition-colors {{ $inWishlist ? 'text-primary' : '' }}"
+                                aria-label="Wishlist">
+                                <span class="material-symbols-outlined">favorite</span>
+                            </button>
+                        </form>
+                    @endauth
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex text-primary">
+                        <span class="material-symbols-outlined fill-1">star</span>
+                        <span class="material-symbols-outlined fill-1">star</span>
+                        <span class="material-symbols-outlined fill-1">star</span>
+                        <span class="material-symbols-outlined fill-1">star</span>
+                        <span class="material-symbols-outlined">star_half</span>
+                    </div>
+                    <span class="text-sm font-medium text-gray-500">(128 Reviews)</span>
+                </div>
+                <p class="text-3xl font-bold text-primary">
+                    <span id="variantPriceText">
+                        @if(is_null($defaultVariantPrice))
+                            Rp —
+                        @else
+                            Rp {{ number_format((float) $defaultVariantPrice, 0, ',', '.') }}
+                        @endif
+                    </span>
+                </p>
+                <p class="text-gray-600 dark:text-gray-300 leading-relaxed max-w-lg">
+                    {{ $product->description ?: 'No description available.' }}
+                </p>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <span class="text-sm font-bold uppercase tracking-widest">Variant</span>
+                @if($variants->isEmpty())
+                    <p class="text-sm text-gray-500">No variants available for this product.</p>
+                @else
+                    <select
+                        id="variantSelect"
+                        class="w-full rounded-lg border border-gray-200 bg-white dark:bg-background-dark px-4 py-3 text-sm font-medium focus:ring-primary focus:border-primary">
+                        @foreach($variants as $variant)
+                            @php
+                                $labelParts = collect([
+                                    $variant->color ? ('Color: ' . $variant->color) : null,
+                                    $variant->size ? ('Size: ' . $variant->size) : null,
+                                ])->filter()->values();
+
+                                $label = $labelParts->isNotEmpty() ? $labelParts->join(' / ') : ('Variant #' . $variant->id);
+                            @endphp
+                            <option
+                                value="{{ $variant->id }}"
+                                data-price="{{ (int) $variant->price }}"
+                                data-stock="{{ (int) $variant->stock }}"
+                                {{ (int) $variant->id === (int) $defaultVariantId ? 'selected' : '' }}>
+                                {{ $label }} — Rp {{ number_format((float) $variant->price, 0, ',', '.') }}
+                                @if((int) $variant->stock <= 0)
+                                    (Out of stock)
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <p class="text-xs text-gray-500">
+                        Stock: <span id="variantStockText">{{ is_null($defaultVariantStock) ? '—' : (int) $defaultVariantStock }}</span>
+                    </p>
+                @endif
+            </div>
+            <div class="flex flex-col gap-6">
+                <form method="POST" action="{{ route('cart.add') }}" class="flex items-center gap-6">
+                    @csrf
+                    <input type="hidden" name="variant_id" id="variantIdInput" value="{{ $defaultVariantId }}" />
+                    <input type="hidden" name="qty" id="qtyInput" value="1" />
+
+                    <div class="flex items-center border border-gray-200 rounded-lg h-14 bg-white dark:bg-background-dark">
+                        <button type="button" id="qtyMinus" class="px-4 h-full flex items-center justify-center hover:text-primary">
+                            <span class="material-symbols-outlined">remove</span>
+                        </button>
+                        <span id="qtyText" class="w-12 text-center font-bold">1</span>
+                        <button type="button" id="qtyPlus" class="px-4 h-full flex items-center justify-center hover:text-primary">
+                            <span class="material-symbols-outlined">add</span>
+                        </button>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="flex-1 bg-primary text-white font-bold h-14 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                        {{ $variants->isEmpty() ? 'disabled' : '' }}>
+                        <span class="material-symbols-outlined">shopping_bag</span>
+                        Add to Bag
+                    </button>
+                </form>
+
+                <div class="flex items-center gap-6 py-4 border-t border-b border-gray-100 dark:border-[#3d2030]">
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-tighter">
+                        <span class="material-symbols-outlined text-primary">local_shipping</span>
+                        Free Shipping
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-tighter">
+                        <span class="material-symbols-outlined text-primary">eco</span>
+                        Clean Formula
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-tighter">
+                        <span class="material-symbols-outlined text-primary">history</span>
+                        30-Day Returns
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="px-6 lg:px-20 py-20">
+        <div class="max-w-4xl">
+            <div class="flex border-b border-gray-200 dark:border-[#3d2030] gap-12 mb-10">
+                <button
+                    class="pb-4 text-sm font-bold uppercase tracking-widest border-b-2 border-primary">Ingredients</button>
+                <button
+                    class="pb-4 text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">How
+                    to Use</button>
+                <button
+                    class="pb-4 text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Customer
+                    Reviews</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="flex flex-col gap-4">
+                    <h4 class="font-bold serif-text text-xl">Key Ingredients</h4>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                        Octyldodecanol, Polyethylene, Squalane, Microcrystalline Wax, Rosa Damascena Flower Oil,
+                        Sodium Hyaluronate, Vitamin E Acetate.
+                    </p>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <h4 class="font-bold serif-text text-xl">Why it works</h4>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                        Our proprietary blend of natural waxes and oils ensures a smooth glide-on application while
+                        sealing in moisture for a plump, velvet-smooth finish that lasts all day without drying.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="px-6 lg:px-20 py-12 bg-white dark:bg-[#1b0d14]/30">
+        <h2 class="text-3xl font-bold mb-10 serif-text">Complete the Look</h2>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            @forelse($relatedProducts as $rp)
+                @php
+                    $rpFirstImage = optional($rp->images->first())->image;
+                    $rpImgSrc = $rpFirstImage
+                        ? asset('storage/' . ltrim($rpFirstImage, '/'))
+                        : ('https://ui-avatars.com/api/?name=' . urlencode($rp->name) . '&background=f3e7ed&color=1b0d14');
+                    $rpMinPrice = $rp->variants_min_price ?? $rp->variants?->min('price');
+                @endphp
+                <a href="{{ route('product.show', $rp->slug) }}" class="group flex flex-col gap-3">
+                    <div class="relative aspect-square rounded-xl overflow-hidden bg-background-light dark:bg-[#2d1622]">
+                        <img src="{{ $rpImgSrc }}" alt="{{ $rp->name }}" class="w-full h-full object-cover transition-transform group-hover:scale-110" loading="lazy" />
+                    </div>
+                    <h4 class="font-bold text-base line-clamp-1">{{ $rp->name }}</h4>
+                    <p class="font-bold text-primary">
+                        @if(is_null($rpMinPrice))
+                            Rp —
+                        @else
+                            Rp {{ number_format((float) $rpMinPrice, 0, ',', '.') }}
+                        @endif
+                    </p>
+                </a>
+            @empty
+                <p class="col-span-full text-sm text-gray-500">No related products.</p>
+            @endforelse
+        </div>
+    </section>
+
     <script>
-        var thumbSwiper = new Swiper(".productThumbSwiper", {
-            spaceBetween: 10,
-            slidesPerView: 'auto',
-            watchSlidesProgress: true,
-            freeMode: true,
-        });
+        (function () {
+            var mainImage = document.getElementById('mainProductImage');
+            var thumbs = document.querySelectorAll('[data-thumb]');
+            thumbs.forEach(function (t) {
+                t.addEventListener('click', function () {
+                    var url = t.getAttribute('data-image-url');
+                    if (mainImage && url) mainImage.src = url;
+                });
+            });
 
-        var mainSwiper = new Swiper(".productMainSwiper", {
-            spaceBetween: 10,
-            navigation: {
-                nextEl: ".product-swiper-next",
-                prevEl: ".product-swiper-prev",
-            },
-            thumbs: {
-                swiper: thumbSwiper,
-            },
-            grabCursor: true,
-            autoHeight: true,
-        });
+            var variantSelect = document.getElementById('variantSelect');
+            var variantIdInput = document.getElementById('variantIdInput');
+            var priceText = document.getElementById('variantPriceText');
+            var stockText = document.getElementById('variantStockText');
 
-        function updatePrice(element) {
-            const price = element.getAttribute('data-price');
-            document.getElementById('selected_price').value = price;
-            document.getElementById('display_price').innerText = 'Rp ' + Number(price).toLocaleString('id-ID');
-        }
+            function formatRp(value) {
+                try {
+                    return new Intl.NumberFormat('id-ID').format(value);
+                } catch (e) {
+                    return String(value);
+                }
+            }
+
+            function updateVariantUI() {
+                if (!variantSelect) return;
+                var opt = variantSelect.options[variantSelect.selectedIndex];
+                if (!opt) return;
+
+                var variantId = opt.value;
+                var price = parseInt(opt.getAttribute('data-price') || '0', 10);
+                var stock = parseInt(opt.getAttribute('data-stock') || '0', 10);
+
+                if (variantIdInput) variantIdInput.value = variantId;
+                if (priceText) priceText.textContent = 'Rp ' + formatRp(price);
+                if (stockText) stockText.textContent = String(stock);
+            }
+
+            if (variantSelect) {
+                variantSelect.addEventListener('change', updateVariantUI);
+                updateVariantUI();
+            }
+
+            var qtyMinus = document.getElementById('qtyMinus');
+            var qtyPlus = document.getElementById('qtyPlus');
+            var qtyText = document.getElementById('qtyText');
+            var qtyInput = document.getElementById('qtyInput');
+
+            function setQty(nextQty) {
+                var v = Math.max(1, parseInt(nextQty || '1', 10));
+                if (qtyText) qtyText.textContent = String(v);
+                if (qtyInput) qtyInput.value = String(v);
+            }
+
+            if (qtyMinus) qtyMinus.addEventListener('click', function () {
+                setQty((qtyInput && qtyInput.value) ? (parseInt(qtyInput.value, 10) - 1) : 1);
+            });
+            if (qtyPlus) qtyPlus.addEventListener('click', function () {
+                setQty((qtyInput && qtyInput.value) ? (parseInt(qtyInput.value, 10) + 1) : 2);
+            });
+        })();
     </script>
 
-    <style>
-        .macaron-shadow {
-            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
-        }
 
-        .productThumbSwiper .swiper-slide-thumb-active {
-            border-color: #F42559 !important;
-            /* Tailwind primary */
-            opacity: 1;
-        }
-
-        .productThumbSwiper .swiper-slide {
-            opacity: 0.75;
-        }
-
-        .productThumbSwiper .swiper-slide-thumb-active {
-            opacity: 1;
-        }
-
-        .candy-cane-border {
-            background: repeating-linear-gradient(45deg, #F42559, #F42559 10px, #ffffff 10px, #ffffff 20px);
-        }
-
-        /* Hide arrows in number input */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-    </style>
 @endsection

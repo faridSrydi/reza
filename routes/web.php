@@ -50,17 +50,14 @@ Route::post('/payment/midtrans/notify', [MidtransWebhookController::class, 'noti
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
     ->name('payment.midtrans.notify');
 
+// Cart (session-based; allow guest)
+Route::post('/cart/add', [CheckoutController::class, 'addToCart'])->name('cart.add');
+Route::get('/cart', [CheckoutController::class, 'index'])->name('cart.index');
+Route::post('/cart/update', [CheckoutController::class, 'updateQty'])->name('cart.update');
+Route::delete('/cart/{variantId}', [CheckoutController::class, 'remove'])->name('cart.remove');
+
 
 Route::middleware('auth')->group(function () {
-    // Tambahkan route ini untuk menangani tombol "Tambah ke Keranjang"
-    Route::post('/cart/add', [CheckoutController::class, 'addToCart'])->name('cart.add');
-
-
-    Route::get('/cart', [CheckoutController::class, 'index'])->name('cart.index');
-    Route::post('/cart/update', [CheckoutController::class, 'updateQty'])->name('cart.update');
-    Route::delete('/cart/{variantId}', [CheckoutController::class, 'remove'])->name('cart.remove');
-
-
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');

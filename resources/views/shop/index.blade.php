@@ -1,444 +1,247 @@
-@extends('layouts.app')
+@extends('layouts.app') 
 
 @section('title', 'Shop')
 
 @section('content')
+
     <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
 
-        .filled-icon {
-            font-variation-settings: 'FILL' 1;
+        .filled-star {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            color: #ee2b8c;
         }
 
-        /* Custom Lollipop Checkbox Style */
-        .lollipop-checkbox {
-            appearance: none;
-            width: 24px;
-            height: 24px;
-            border: 3px solid #f42559;
-            border-radius: 50%;
-            cursor: pointer;
-            position: relative;
-            background: white;
-            transition: all 0.2s ease;
-        }
-
-        .lollipop-checkbox:checked {
-            background: radial-gradient(circle, #f42559 40%, white 45%, #f42559 50%);
-        }
-
-        .lollipop-checkbox::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 3px;
-            height: 8px;
-            background-color: #f42559;
-            border-radius: 2px;
-        }
-
-        /* Wavy Border for Sidebar */
-        .wavy-border {
-            border: 4px solid #f42559;
-            border-radius: 40px 20px 40px 20px;
-        }
-
-        /* Subtle Pattern Background */
-        .bg-pattern {
-            background-color: #f8f5f6;
-            background-image: radial-gradient(#f42559 0.5px, transparent 0.5px), radial-gradient(#f42559 0.5px, #f8f5f6 0.5px);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
-            opacity: 0.1;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        /* Hover Heart Animation */
-        .product-card:hover .heart-anim {
-            opacity: 1;
-            transform: translateY(-6px) scale(1.04);
-        }
-
-        .wishlist-bubble {
-            background: linear-gradient(135deg, rgba(255, 235, 240, 0.95), rgba(255, 255, 255, 0.85));
-            border: 2px solid rgba(244, 37, 89, 0.18);
-            box-shadow: 0 10px 30px -12px rgba(244, 37, 89, 0.35);
-        }
-
-        .wishlist-bubble .material-symbols-outlined {
-            font-size: 18px;
-        }
-
-        /* Mobile filter bottom-sheet */
-        .filter-overlay {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 220ms ease;
-        }
-
-        .filter-overlay.is-open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .filter-sheet {
-            transform: translateY(18px);
-            opacity: 0;
-            transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
-        }
-
-        .filter-overlay.is-open .filter-sheet {
-            transform: translateY(0);
-            opacity: 1;
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
         }
     </style>
+    <main class="max-w-[1440px] mx-auto px-4 lg:px-20 py-8">
+        @php
+            $pageTitle = $activeCategory?->name
+                ?? ($activeCategories?->isNotEmpty() ? 'Selected Categories' : 'Shop');
+        @endphp
 
-    <main class="flex-1 max-w-[1280px] mx-auto w-full px-6 py-8">
-        {{-- Breadcrumbs --}}
-        <div class="flex items-center gap-2 mb-6">
-            <a class="text-primary/60 text-sm font-semibold hover:text-primary" href="{{ route('home') }}">Home</a>
-            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
-            <a class="text-primary/60 text-sm font-semibold hover:text-primary" href="{{ route('shop.index') }}">Shop</a>
-
-            @if (isset($activeCategories) && $activeCategories->isNotEmpty())
-                <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
-                @if ($activeCategories->count() === 1)
-                    <span class="text-primary text-sm font-bold">{{ $activeCategories->first()->name }}</span>
-                @else
-                    <span class="text-primary text-sm font-bold">{{ $activeCategories->count() }} categories</span>
-                @endif
+        <!-- Breadcrumbs -->
+        <div class="flex items-center gap-2 mb-8 text-sm text-[#9a4c73] dark:text-[#c48ba8]">
+            <a class="hover:text-primary" href="{{ route('home') }}">Home</a>
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+            <span class="text-[#1b0d14] dark:text-white font-semibold">Shop</span>
+            @if ($activeCategory)
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="text-[#1b0d14] dark:text-white font-semibold">{{ $activeCategory->name }}</span>
             @endif
         </div>
-        <div class="flex flex-col md:flex-row gap-8">
-            <!-- SideNavBar (Desktop) -->
-            <aside class="hidden md:block w-full md:w-64 flex-shrink-0">
-                <div class="wavy-border bg-white dark:bg-background-dark p-6 space-y-8 sticky top-24">
+
+        <div class="flex flex-col lg:flex-row gap-10">
+            <!-- Sidebar Filters -->
+            <aside class="w-full lg:w-64 flex-shrink-0">
+                <form method="GET" action="{{ route('shop.index') }}" class="sticky top-24 space-y-8">
                     <div>
-                        <h3 class="text-primary text-lg font-extrabold mb-1">Filters</h3>
-                        <p class="text-primary/50 text-xs font-medium uppercase tracking-widest">Refine your hunt</p>
-                    </div>
-                    <form method="GET" action="{{ route('shop.index') }}" class="space-y-6">
-                        <input type="hidden" name="sort" value="{{ request('sort', 'default') }}" />
-
-                        {{-- Category Filter (multi) --}}
-                        <div>
-                            <div class="flex items-center gap-2 text-primary font-bold mb-3">
-                                <span class="material-symbols-outlined">category</span>
-                                <span>Category</span>
-                            </div>
-
-                            <div class="space-y-2">
-                                @foreach ($categories as $category)
-                                    <label class="flex items-center gap-3 px-3 py-2 rounded-xl border-2 border-primary/10 hover:border-primary/20 transition-colors cursor-pointer">
-                                        <input
-                                            class="lollipop-checkbox"
-                                            type="checkbox"
-                                            name="categories[]"
-                                            value="{{ $category->slug }}"
-                                            @checked(in_array($category->slug, (array) ($selectedCategorySlugsArray ?? []), true))
-                                        />
-                                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $category->name }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-
-                            <a href="{{ route('shop.index') }}" class="inline-flex mt-3 text-xs font-bold text-primary/70 hover:text-primary underline">
-                                Reset categories
-                            </a>
-                        </div>
-
-                        {{-- Price Range --}}
-                        <div>
-                            <div class="flex items-center gap-2 text-primary font-bold mb-3">
-                                <span class="material-symbols-outlined">payments</span>
-                                <span>Price</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <input name="min_price" value="{{ request('min_price') }}" placeholder="Min" inputmode="numeric"
-                                    class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-2 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none placeholder:text-primary/40" />
-                                <input name="max_price" value="{{ request('max_price') }}" placeholder="Max" inputmode="numeric"
-                                    class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-2 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none placeholder:text-primary/40" />
-                            </div>
-                            <p class="text-[11px] text-primary/50 font-semibold mt-2">Masukkan angka tanpa titik/koma. Contoh: 10000</p>
-                        </div>
-
-                        {{-- Search --}}
-                        <div>
-                            <div class="flex items-center gap-2 text-primary font-bold mb-3">
-                                <span class="material-symbols-outlined">search</span>
-                                <span>Search</span>
-                            </div>
-                            <input name="q" value="{{ request('q') }}" placeholder="Cari produk..." type="text"
-                                class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-2 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none placeholder:text-primary/40" />
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <a href="{{ route('shop.index') }}"
-                                class="w-full inline-flex items-center justify-center py-3 rounded-xl border-2 border-primary/20 text-primary font-extrabold hover:border-primary/40 hover:bg-primary/5 transition-colors">
-                                Reset
-                            </a>
-                            <button
-                                class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform shadow-lg shadow-primary/20">
-                                Apply
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </aside>
-            <!-- Main Content Area -->
-            <div class="flex-1">
-                <!-- Mobile: Filter Hamburger -->
-                <div class="md:hidden mb-4 px-4">
-                    <button id="mobileFilterButton" type="button"
-                        class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border-2 border-primary/15 bg-white/80 dark:bg-background-dark/60 backdrop-blur-md text-primary font-extrabold shadow-lg shadow-primary/5"
-                        aria-controls="mobileFilterOverlay" aria-expanded="false">
-                        <span class="flex items-center gap-2">
-                            <span class="material-symbols-outlined filled-icon">tune</span>
+                        <h3 class="text-lg font-bold mb-4 flex items-center justify-between">
                             Filters
-                        </span>
-                        <span class="material-symbols-outlined">menu</span>
-                    </button>
-                </div>
-
-                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 px-4">
-                    <div class="min-w-0">
-                        <h1 class="text-4xl font-extrabold text-primary tracking-tight">
-                            @if (isset($activeCategories) && $activeCategories->count() === 1)
-                                {{ $activeCategories->first()->name }}
-                            @elseif (isset($activeCategories) && $activeCategories->count() > 1)
-                                Selected Categories
-                            @else
-                                All Products
-                            @endif
-                        </h1>
-                        <p class="text-primary/60 font-semibold">Found {{ $products->total() }} products</p>
+                            <a class="text-xs font-normal text-primary hover:underline" href="{{ route('shop.index') }}">Clear all</a>
+                        </h3>
                     </div>
 
-                    <form method="GET" action="{{ route('shop.index') }}" class="w-full sm:w-auto">
-                        @foreach ((array) ($selectedCategorySlugsArray ?? []) as $slug)
-                            <input type="hidden" name="categories[]" value="{{ $slug }}" />
-                        @endforeach
-                        <input type="hidden" name="q" value="{{ request('q') }}" />
-                        <input type="hidden" name="min_price" value="{{ request('min_price') }}" />
-                        <input type="hidden" name="max_price" value="{{ request('max_price') }}" />
+                    <!-- Search -->
+                    <div class="space-y-3">
+                        <h4 class="font-semibold text-sm uppercase tracking-wider text-[#9a4c73] dark:text-[#c48ba8]">Search</h4>
+                        <input
+                            name="q"
+                            value="{{ request('q') }}"
+                            class="w-full rounded-lg border border-[#e7cfdb] dark:border-[#3a202d] bg-white dark:bg-background-dark px-4 py-2 text-sm focus:ring-primary"
+                            placeholder="Search products..." />
+                    </div>
 
-                        <label class="block">
-                            <span class="sr-only">Sort</span>
-                            <select name="sort" onchange="this.form.submit()"
-                                class="w-full sm:w-[260px] bg-white dark:bg-background-dark border-2 border-primary/20 rounded-2xl px-4 py-3 text-sm font-extrabold text-primary focus:border-primary focus:ring-0 outline-none">
-                                <option value="default" @selected(request('sort', 'default') === 'default')>Default</option>
-                                <option value="price_desc" @selected(request('sort') === 'price_desc')>Harga: tertinggi → terendah</option>
-                                <option value="price_asc" @selected(request('sort') === 'price_asc')>Harga: terendah → tertinggi</option>
-                                <option value="name_asc" @selected(request('sort') === 'name_asc')>Nama: A → Z</option>
-                                <option value="name_desc" @selected(request('sort') === 'name_desc')>Nama: Z → A</option>
-                            </select>
-                        </label>
-                    </form>
-                </div>
-                <!-- Product Grid -->
-                <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    @forelse ($products as $product)
-                        @php
-                            $image = $product->images->first();
-                            $minPrice = $product->variants->min('price');
-                            $wishlisted = in_array($product->id, $wishlistProductIds ?? [], true);
-                        @endphp
-
-                        <a href="{{ route('product.show', $product->slug) }}"
-                            class="product-card group relative bg-white dark:bg-background-dark p-3 sm:p-4 rounded-xl shadow-xl shadow-primary/5 hover:shadow-primary/10 transition-all border-2 border-transparent hover:border-primary/20">
-                            <button type="button"
-                                class="heart-anim {{ $wishlisted ? 'opacity-100' : 'opacity-0' }} absolute top-3 right-3 z-10 transition-all duration-300"
-                                data-wishlist-toggle
-                                data-wishlist-url="{{ route('wishlist.toggle', $product) }}"
-                                data-wishlist-active="{{ $wishlisted ? '1' : '0' }}"
-                                aria-label="Toggle wishlist">
-                                <span class="wishlist-bubble inline-flex items-center justify-center h-9 w-9 rounded-2xl backdrop-blur-md">
-                                    <span class="material-symbols-outlined wishlist-icon {{ $wishlisted ? 'is-on text-primary' : 'text-primary/40' }}">favorite</span>
-                                </span>
-                            </button>
-
-                            <div
-                                class="aspect-square rounded-lg bg-pink-50 dark:bg-primary/5 mb-4 flex items-center justify-center overflow-hidden">
-                                @if ($image)
-                                    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                                        src="{{ asset('storage/' . $image->image) }}" alt="{{ $product->name }}" />
-                                @else
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <span class="text-primary/40 text-xs font-bold uppercase tracking-widest">No
-                                            Image</span>
-                                    </div>
-                                @endif
-                            </div>
-
-                            <div class="space-y-2">
-                                <div class="flex justify-between items-start gap-3">
-                                    <h3
-                                        class="text-lg font-extrabold text-gray-800 dark:text-white leading-tight line-clamp-2">
-                                        {{ $product->name }}
-                                    </h3>
-                                    <span class="text-primary font-bold whitespace-nowrap">
-                                        @if (is_null($minPrice))
-                                            —
-                                        @else
-                                            Rp {{ number_format($minPrice, 0, ',', '.') }}
-                                        @endif
-                                    </span>
-                                </div>
-
-                                <p class="text-xs font-bold text-primary/60 uppercase tracking-widest">
-                                    {{ $product->category?->name }}
-                                </p>
-
-                                <div
-                                    class="w-full bg-primary/10 text-primary font-bold py-2.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all flex items-center justify-center gap-2">
-                                    <span class="material-symbols-outlined text-lg">open_in_new</span>
-                                    View Details
-                                </div>
-                            </div>
-                        </a>
-                    @empty
-                        <div
-                            class="col-span-full bg-white dark:bg-background-dark p-8 rounded-xl border-2 border-primary/10">
-                            <p class="text-primary font-bold">Tidak ada produk ditemukan.</p>
-                            <p class="text-primary/60 text-sm font-semibold mt-1">Coba ganti kategori atau kata kunci
-                                pencarian.</p>
+                    <!-- Category Filter -->
+                    <div class="space-y-3">
+                        <h4 class="font-semibold text-sm uppercase tracking-wider text-[#9a4c73] dark:text-[#c48ba8]">Category</h4>
+                        <div class="space-y-2">
+                            @forelse($categories as $category)
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input
+                                        class="rounded border-[#e7cfdb] text-primary focus:ring-primary size-4"
+                                        type="checkbox"
+                                        name="categories[]"
+                                        value="{{ $category->slug }}"
+                                        {{ in_array($category->slug, $selectedCategorySlugsArray ?? [], true) ? 'checked' : '' }}
+                                    />
+                                    <span class="text-sm group-hover:text-primary transition-colors">{{ $category->name }}</span>
+                                </label>
+                            @empty
+                                <p class="text-sm text-[#9a4c73] dark:text-[#c48ba8]">No categories.</p>
+                            @endforelse
                         </div>
-                    @endforelse
-                </div>
-                <!-- Pagination -->
-                <div class="mt-12 flex justify-center">
-                    {{ $products->onEachSide(1)->links() }}
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Mobile Filter Bottom Sheet -->
-    <div id="mobileFilterOverlay" class="md:hidden filter-overlay fixed inset-0 z-50">
-        <div class="absolute inset-0 bg-black/40" data-close-filter></div>
-        <div class="absolute inset-x-0 bottom-0 p-3">
-            <div class="filter-sheet w-full max-w-[640px] mx-auto bg-white dark:bg-background-dark shadow-2xl border-2 border-primary/15 rounded-3xl">
-                <div class="p-4 border-b border-primary/10 flex items-center justify-between gap-3">
-                    <div>
-                        <div class="text-primary font-extrabold text-lg">Filters</div>
-                        <div class="text-primary/50 text-xs font-medium uppercase tracking-widest">Refine your hunt</div>
                     </div>
-                    <button type="button" class="h-10 w-10 rounded-xl border-2 border-primary/15 bg-candy-pink/60 text-primary flex items-center justify-center" data-close-filter aria-label="Close filters">
-                        <span class="material-symbols-outlined">close</span>
+
+                    <!-- Price Filter -->
+                    <div class="space-y-3">
+                        <h4 class="font-semibold text-sm uppercase tracking-wider text-[#9a4c73] dark:text-[#c48ba8]">Price Range (Rp)</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-[#9a4c73] dark:text-[#c48ba8] mb-1">Min</label>
+                                <input
+                                    name="min_price"
+                                    value="{{ request('min_price') }}"
+                                    type="number"
+                                    min="0"
+                                    class="w-full rounded-lg border border-[#e7cfdb] dark:border-[#3a202d] bg-white dark:bg-background-dark px-4 py-2 text-sm focus:ring-primary"
+                                    placeholder="0" />
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-[#9a4c73] dark:text-[#c48ba8] mb-1">Max</label>
+                                <input
+                                    name="max_price"
+                                    value="{{ request('max_price') }}"
+                                    type="number"
+                                    min="0"
+                                    class="w-full rounded-lg border border-[#e7cfdb] dark:border-[#3a202d] bg-white dark:bg-background-dark px-4 py-2 text-sm focus:ring-primary"
+                                    placeholder="" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="sort" value="{{ $sort ?? request('sort', 'default') }}" />
+
+                    <button
+                        class="w-full bg-primary text-white py-2.5 rounded-lg text-sm font-bold shadow-lg flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-lg">tune</span>
+                        Apply Filters
                     </button>
-                </div>
+                </form>
+            </aside>
 
-                <div class="p-4 overflow-y-auto max-h-[70vh]">
-                    <div class="wavy-border bg-white dark:bg-background-dark p-5 space-y-8">
-                        <form method="GET" action="{{ route('shop.index') }}" class="space-y-6">
-                            <input type="hidden" name="sort" value="{{ request('sort', 'default') }}" />
+            <!-- Main Content Area -->
+            <section class="flex-1">
+                <!-- Toolbar -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold mb-1">{{ $pageTitle }}</h1>
+                        <p class="text-sm text-[#9a4c73] dark:text-[#c48ba8]">
+                            @if($products->total() > 0)
+                                Showing {{ $products->firstItem() }}–{{ $products->lastItem() }} of {{ $products->total() }} products
+                            @else
+                                No products found
+                            @endif
+                        </p>
+                    </div>
 
-                            {{-- Category Filter (multi) --}}
-                            <div>
-                                <div class="flex items-center gap-2 text-primary font-bold mb-3">
-                                    <span class="material-symbols-outlined">category</span>
-                                    <span>Category</span>
-                                </div>
+                    <div class="flex items-center gap-4">
+                        <form method="GET" action="{{ route('shop.index') }}" class="relative inline-block">
+                            @foreach(($selectedCategorySlugsArray ?? []) as $slug)
+                                <input type="hidden" name="categories[]" value="{{ $slug }}" />
+                            @endforeach
+                            @if(request('q'))
+                                <input type="hidden" name="q" value="{{ request('q') }}" />
+                            @endif
+                            @if(request('min_price') !== null)
+                                <input type="hidden" name="min_price" value="{{ request('min_price') }}" />
+                            @endif
+                            @if(request('max_price') !== null)
+                                <input type="hidden" name="max_price" value="{{ request('max_price') }}" />
+                            @endif
 
-                                <div class="space-y-2">
-                                    @foreach ($categories as $category)
-                                        <label class="flex items-center gap-3 px-3 py-2 rounded-xl border-2 border-primary/10 hover:border-primary/20 transition-colors cursor-pointer">
-                                            <input
-                                                class="lollipop-checkbox"
-                                                type="checkbox"
-                                                name="categories[]"
-                                                value="{{ $category->slug }}"
-                                                @checked(in_array($category->slug, (array) ($selectedCategorySlugsArray ?? []), true))
-                                            />
-                                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $category->name }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
-
-                                <a href="{{ route('shop.index') }}" class="inline-flex mt-3 text-xs font-bold text-primary/70 hover:text-primary underline">
-                                    Reset categories
-                                </a>
-                            </div>
-
-                            {{-- Price Range --}}
-                            <div>
-                                <div class="flex items-center gap-2 text-primary font-bold mb-3">
-                                    <span class="material-symbols-outlined">payments</span>
-                                    <span>Price</span>
-                                </div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <input name="min_price" value="{{ request('min_price') }}" placeholder="Min" inputmode="numeric"
-                                        class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-2 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none placeholder:text-primary/40" />
-                                    <input name="max_price" value="{{ request('max_price') }}" placeholder="Max" inputmode="numeric"
-                                        class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-2 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none placeholder:text-primary/40" />
-                                </div>
-                            </div>
-
-                            {{-- Search --}}
-                            <div>
-                                <div class="flex items-center gap-2 text-primary font-bold mb-3">
-                                    <span class="material-symbols-outlined">search</span>
-                                    <span>Search</span>
-                                </div>
-                                <input name="q" value="{{ request('q') }}" placeholder="Cari produk..." type="text"
-                                    class="w-full bg-white dark:bg-background-dark border-2 border-primary/20 rounded-xl px-4 py-2 text-sm font-semibold text-primary focus:border-primary focus:ring-0 outline-none placeholder:text-primary/40" />
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <a href="{{ route('shop.index') }}"
-                                    class="w-full inline-flex items-center justify-center py-3 rounded-xl border-2 border-primary/20 text-primary font-extrabold hover:border-primary/40 hover:bg-primary/5 transition-colors">
-                                    Reset
-                                </a>
-                                <button
-                                    class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:scale-105 transition-transform shadow-lg shadow-primary/20">
-                                    Apply
-                                </button>
-                            </div>
+                            <select
+                                name="sort"
+                                onchange="this.form.submit()"
+                                class="appearance-none bg-white dark:bg-background-dark border border-[#f3e7ed] dark:border-[#3a202d] rounded-lg px-4 py-2 pr-10 text-sm font-medium focus:ring-primary outline-none cursor-pointer">
+                                <option value="default" {{ ($sort ?? 'default') === 'default' ? 'selected' : '' }}>Sort: Newest</option>
+                                <option value="price_asc" {{ ($sort ?? '') === 'price_asc' ? 'selected' : '' }}>Price: Low to High</option>
+                                <option value="price_desc" {{ ($sort ?? '') === 'price_desc' ? 'selected' : '' }}>Price: High to Low</option>
+                                <option value="name_asc" {{ ($sort ?? '') === 'name_asc' ? 'selected' : '' }}>Name: A–Z</option>
+                                <option value="name_desc" {{ ($sort ?? '') === 'name_desc' ? 'selected' : '' }}>Name: Z–A</option>
+                            </select>
+                            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg">expand_more</span>
                         </form>
                     </div>
                 </div>
-            </div>
+
+                @if(($activeCategories ?? collect())->isNotEmpty())
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        @foreach($activeCategories as $cat)
+                            <a href="{{ route('shop.index', array_merge(request()->except(['page', 'category', 'categories']), ['category' => $cat->slug])) }}"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                                {{ $cat->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+
+                <!-- Product Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                    @forelse($products as $product)
+                        @php
+                            $firstImage = optional($product->images->first())->image;
+                            $imgSrc = $firstImage
+                                ? asset('storage/' . ltrim($firstImage, '/'))
+                                : ('https://ui-avatars.com/api/?name=' . urlencode($product->name) . '&background=f3e7ed&color=1b0d14');
+                            $minPrice = $product->variants_min_price ?? $product->variants?->min('price');
+                            $inWishlist = in_array($product->id, $wishlistProductIds ?? [], true);
+                        @endphp
+
+                        <div class="group relative flex flex-col bg-white dark:bg-[#2d1522] rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+                            <a href="{{ route('product.show', $product->slug) }}" class="relative aspect-[4/5] overflow-hidden bg-[#f3e7ed] block">
+                                <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    alt="{{ $product->name }}"
+                                    src="{{ $imgSrc }}" loading="lazy" />
+
+                                @auth
+                                    <div class="absolute top-3 right-3">
+                                        <button type="button"
+                                            class="size-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-md {{ $inWishlist ? 'text-primary' : 'text-[#1b0d14] hover:text-primary' }}"
+                                            data-wishlist-toggle
+                                            data-wishlist-url="{{ route('wishlist.toggle', $product) }}"
+                                            data-wishlist-active="{{ $inWishlist ? 1 : 0 }}"
+                                            aria-label="Wishlist">
+                                            <span class="material-symbols-outlined text-xl">favorite</span>
+                                        </button>
+                                    </div>
+                                @endauth
+
+                                <div class="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                                    <div class="w-full bg-primary text-white py-2.5 rounded-lg text-sm font-bold shadow-lg flex items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-lg">open_in_new</span>
+                                        View Details
+                                    </div>
+                                </div>
+                            </a>
+
+                            <div class="p-5 flex-1 flex flex-col">
+                                <span class="text-[10px] uppercase tracking-widest text-[#9a4c73] dark:text-[#c48ba8] font-bold mb-1">
+                                    {{ $product->category?->name ?? 'Uncategorized' }}
+                                </span>
+                                <h3 class="font-bold text-[#1b0d14] dark:text-white mb-2 line-clamp-1">{{ $product->name }}</h3>
+
+                                <div class="mt-auto flex items-center justify-between">
+                                    <span class="text-lg font-bold text-primary">
+                                        @if (is_null($minPrice))
+                                            Rp —
+                                        @else
+                                            Rp {{ number_format((float) $minPrice, 0, ',', '.') }}
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="col-span-full bg-white dark:bg-[#2d1522] rounded-xl p-8 text-center border border-[#f3e7ed] dark:border-[#3a202d]">
+                            <p class="text-primary font-bold">No products match your filters.</p>
+                            <a href="{{ route('shop.index') }}" class="inline-flex mt-4 bg-primary text-white font-bold px-6 py-3 rounded-full hover:scale-105 transition-transform">
+                                Clear filters
+                            </a>
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Pagination -->
+                <div class="mt-16 flex items-center justify-center">
+                    {{ $products->onEachSide(1)->links() }}
+                </div>
+            </section>
         </div>
-    </div>
-
-    <script>
-        (function () {
-            var openBtn = document.getElementById('mobileFilterButton');
-            var overlay = document.getElementById('mobileFilterOverlay');
-
-            function open() {
-                if (!overlay) return;
-                overlay.classList.add('is-open');
-                if (openBtn) openBtn.setAttribute('aria-expanded', 'true');
-                document.body.style.overflow = 'hidden';
-            }
-
-            function close() {
-                if (!overlay) return;
-                overlay.classList.remove('is-open');
-                if (openBtn) openBtn.setAttribute('aria-expanded', 'false');
-                document.body.style.overflow = '';
-            }
-
-            if (openBtn && overlay) {
-                openBtn.addEventListener('click', open);
-                overlay.addEventListener('click', function (e) {
-                    if (e.target && e.target.hasAttribute('data-close-filter')) close();
-                });
-                document.addEventListener('keydown', function (e) {
-                    if (e.key === 'Escape') close();
-                });
-            }
-        })();
-    </script>
+    </main>
 
 @endsection

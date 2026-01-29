@@ -2,127 +2,97 @@
 
 @section('title', 'Categories')
 
+@push('styles')
+    <style type="text/tailwindcss">
+        .pill {
+            @apply px-3 py-1 rounded-full bg-[#f3e7ed] text-[#9a4c73] text-xs font-bold;
+        }
+    </style>
+@endpush
+
 @section('content')
-    <main class="flex-1 flex flex-col py-10 px-4 sm:px-8 lg:px-10 relative overflow-hidden min-h-screen">
-        {{-- DECORATION BACKGROUND --}}
-        <div class="absolute top-32 right-10 opacity-5 rotate-12 pointer-events-none">
-            <span class="material-symbols-outlined text-[150px] text-primary">category</span>
-        </div>
+<header class="lg:sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-[#f3e7ed] px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex items-center justify-between gap-4">
+        <h1 class="text-2xl font-bold serif-text">Categories</h1>
 
-        <div class="absolute bottom-24 left-10 opacity-5 -rotate-12 pointer-events-none">
-            <span class="material-symbols-outlined text-[120px] text-primary">icecream</span>
-        </div>
+        <a href="{{ route('admin.categories.create') }}"
+            class="flex items-center gap-2 bg-primary text-white px-5 sm:px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined text-xl">add</span>
+            <span class="hidden sm:inline">Add New Category</span>
+            <span class="sm:hidden">Add</span>
+        </a>
+    </div>
+</header>
 
-        {{-- HEADER SECTION --}}
-        <div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-8 z-10">
-            <div class="flex flex-col gap-3 w-full md:w-2/3">
-                <h1 class="text-[#181113] text-4xl font-black tracking-tight">Category Jar 🍬</h1>
-                <p class="text-primary/70 font-medium">Organize sweets by flavor, vibe, and crunch.</p>
-            </div>
+<main class="p-4 sm:p-6 lg:p-8">
+    <div class="bg-white rounded-2xl border border-[#f3e7ed] overflow-hidden shadow-sm">
+        <div class="overflow-x-auto no-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-[#f3e7ed] bg-[#faf8f9]">
+                        <th class="px-4 sm:px-6 py-5 text-xs font-bold uppercase tracking-wider text-gray-500">Category</th>
+                        <th class="px-4 sm:px-6 py-5 text-xs font-bold uppercase tracking-wider text-gray-500">Slug</th>
+                        <th class="px-4 sm:px-6 py-5 text-xs font-bold uppercase tracking-wider text-gray-500">Products</th>
+                        <th class="px-4 sm:px-6 py-5 text-xs font-bold uppercase tracking-wider text-gray-500 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#f3e7ed]">
+                    @forelse ($categories as $category)
+                        @php
+                            $imgSrc = $category->image
+                                ? asset('storage/' . ltrim($category->image, '/'))
+                                : ('https://ui-avatars.com/api/?name=' . urlencode($category->name) . '&background=f3e7ed&color=9a4c73');
+                        @endphp
 
-            {{-- CREATE BUTTON --}}
-            <a href="{{ route('admin.categories.create') }}"
-                class="group relative flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95">
-                <div class="w-24 h-24 bg-primary rounded-full flex items-center justify-center shadow-lg relative z-10 border-4 border-white">
-                    <span class="material-symbols-outlined text-white text-4xl font-bold">add</span>
-                </div>
-                <div class="w-2 h-16 bg-[#e2e8f0] rounded-b-full -mt-2 shadow-inner"></div>
-                <span class="absolute -bottom-8 whitespace-nowrap text-primary font-black text-xs uppercase tracking-widest">Create New</span>
-            </a>
-        </div>
+                        <tr class="hover:bg-gray-50 transition-colors group">
+                            <td class="px-4 sm:px-6 py-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="size-14 rounded-lg bg-cover bg-center border border-[#f3e7ed] flex-shrink-0"
+                                        style='background-image: url("{{ $imgSrc }}");'>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm">{{ $category->name }}</p>
+                                        <p class="text-xs text-gray-500 uppercase tracking-tight">ID: {{ str_pad((string) $category->id, 4, '0', STR_PAD_LEFT) }}</p>
+                                    </div>
+                                </div>
+                            </td>
 
-        @if (session('success'))
-            <div class="mb-6 z-10">
-                <div class="bg-white rounded-[2rem] border-[3px] border-primary/20 shadow-lg p-5 flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center border-2 border-green-200 shrink-0">
-                        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">check_circle</span>
-                    </div>
-                    <div>
-                        <p class="text-[11px] font-black uppercase tracking-widest text-primary/60">Sweet update</p>
-                        <p class="text-sm font-bold text-[#181113]">{{ session('success') }}</p>
-                    </div>
-                </div>
-            </div>
-        @endif
+                            <td class="px-4 sm:px-6 py-4">
+                                <span class="pill font-mono">/{{ $category->slug }}</span>
+                            </td>
 
-        {{-- TABLE CONTAINER --}}
-        <div class="bg-white rounded-[3rem] border-[4px] border-primary/20 shadow-xl overflow-hidden z-10">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-primary/5">
-                            <th class="p-6 text-primary font-extrabold uppercase text-xs tracking-wider w-16 text-center rounded-tl-[2.5rem]">No</th>
-                            <th class="p-6 text-primary font-extrabold uppercase text-xs tracking-wider w-24">Photo</th>
-                            <th class="p-6 text-primary font-extrabold uppercase text-xs tracking-wider">Category</th>
-                            <th class="p-6 text-primary font-extrabold uppercase text-xs tracking-wider">Slug</th>
-                            <th class="p-6 text-primary font-extrabold uppercase text-xs tracking-wider text-right rounded-tr-[2.5rem]">Actions</th>
+                            <td class="px-4 sm:px-6 py-4">
+                                <span class="pill">{{ (int) ($category->products_count ?? 0) }}</span>
+                            </td>
+
+                            <td class="px-4 sm:px-6 py-4">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ route('admin.categories.edit', $category) }}" class="p-2 text-gray-400 hover:text-primary transition-colors" aria-label="Edit">
+                                        <span class="material-symbols-outlined text-xl">edit</span>
+                                    </a>
+                                    <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="inline-block"
+                                        onsubmit="return confirm('Delete category: {{ addslashes($category->name) }}?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="p-2 text-gray-400 hover:text-red-500 transition-colors" aria-label="Delete">
+                                            <span class="material-symbols-outlined text-xl">delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y divide-primary/5">
-                        @forelse ($categories as $category)
-                            <tr class="hover:bg-primary/5 transition-colors group">
-                                <td class="p-6 text-center font-black text-primary/50">
-                                    {{ $loop->iteration }}
-                                </td>
-                                <td class="p-6">
-                                    <div class="w-14 h-14 rounded-2xl border-4 border-primary/10 bg-primary/5 overflow-hidden flex items-center justify-center">
-                                        @if ($category->image)
-                                            <img class="w-full h-full object-cover" alt="{{ $category->name }}" src="{{ asset('storage/' . ltrim($category->image, '/')) }}" />
-                                        @else
-                                            <span class="material-symbols-outlined text-primary/40" style="font-variation-settings:'FILL' 1">image</span>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="p-6">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-2xl bg-secondary/20 text-primary flex items-center justify-center border-2 border-primary/10">
-                                            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">sell</span>
-                                        </div>
-                                        <div>
-                                            <p class="font-black text-[#181113] group-hover:text-primary transition-colors">{{ $category->name }}</p>
-                                            <p class="text-xs text-primary/60 font-medium font-mono">ID: {{ substr(md5($category->id), 0, 8) }}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="p-6">
-                                    <span class="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold font-mono">
-                                        /{{ $category->slug }}
-                                    </span>
-                                </td>
-                                <td class="p-6">
-                                    <div class="flex justify-end gap-3">
-                                        <a href="{{ route('admin.categories.edit', $category) }}"
-                                            class="w-10 h-10 rounded-full bg-blue-100 text-blue-500 hover:bg-blue-200 flex items-center justify-center transition-colors"
-                                            aria-label="Edit">
-                                            <span class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1">edit</span>
-                                        </a>
-                                        <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="inline-block"
-                                            onsubmit="return confirm('Delete category: {{ addslashes($category->name) }}?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 flex items-center justify-center transition-colors"
-                                                aria-label="Delete">
-                                                <span class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1">delete</span>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="p-10 text-center text-primary/50 font-bold">
-                                    No categories yet — add your first one! 🍭
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="p-6 bg-primary/5 flex items-center justify-between">
-                <span class="text-primary font-bold text-sm">Total: {{ $categories->count() }} Records</span>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-4 sm:px-6 py-10 text-center text-sm text-gray-500">No categories found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-    </main>
+
+        <div class="px-6 py-5 border-t border-[#f3e7ed] flex items-center justify-between">
+            <p class="text-sm text-gray-500">Total: <span class="font-bold text-[#1b0d14]">{{ $categories->count() }}</span></p>
+        </div>
+    </div>
+</main>
 @endsection

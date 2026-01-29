@@ -1,211 +1,240 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Sweet Treat')
+@section('title', 'Edit Product')
+
+@push('styles')
+    <style type="text/tailwindcss">
+        .form-section-card {
+            @apply bg-white border border-[#f3e7ed] rounded-2xl p-6 shadow-sm;
+        }
+
+        .input-label {
+            @apply block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2;
+        }
+
+        .text-input {
+            @apply w-full border-[#f3e7ed] rounded-lg bg-[#fcfaff] focus:ring-primary focus:border-primary text-sm p-3;
+        }
+    </style>
+@endpush
 
 @section('content')
-<main class="flex-1 flex flex-col items-center py-10 px-4 relative overflow-hidden min-h-screen">
-
-    {{-- DECORATION BACKGROUND --}}
-    <div class="absolute top-20 left-10 opacity-10 rotate-12 pointer-events-none">
-        <span class="material-symbols-outlined text-[120px] text-primary">cookie</span>
-    </div>
-    <div class="absolute bottom-40 right-10 opacity-10 -rotate-12 pointer-events-none">
-        <span class="material-symbols-outlined text-[100px] text-primary">cake</span>
-    </div>
-    <div class="absolute top-1/2 left-5 opacity-5 pointer-events-none">
-        <span class="material-symbols-outlined text-[150px] text-primary">favorite</span>
-    </div>
-
-    <div class="w-full max-w-[900px] z-10">
-
-        {{-- BREADCRUMBS --}}
-        <div class="flex flex-wrap gap-2 px-4 mb-6">
-            <a class="text-primary/60 text-sm font-medium hover:text-primary" href="#">Admin</a>
-            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
-            <a class="text-primary/60 text-sm font-medium hover:text-primary" href="{{ route('admin.products.index') }}">Inventory</a>
-            <span class="material-symbols-outlined crumb-heart text-[12px] text-primary">favorite</span>
-            <span class="text-primary text-sm font-bold">Edit Product</span>
-        </div>
-
-        {{-- HEADER --}}
-        <div class="mb-8">
-            <h1 class="text-[#181113] tracking-tight text-4xl font-black leading-tight text-center">Edit Your Tasty Treat!</h1>
-            <p class="text-primary/70 text-center mt-2 font-medium">Update the sweetness without breaking the recipe 🧁✨</p>
-            <div class="mt-3 text-center">
-                <a href="{{ route('admin.products.index') }}" class="text-primary/60 text-sm font-bold hover:text-primary underline underline-offset-4">Back to Inventory</a>
+<header class="lg:sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-[#f3e7ed] px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                <a class="hover:text-primary" href="{{ route('admin.products.index') }}">Products</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span>Edit</span>
             </div>
+            <h1 class="text-3xl font-bold serif-text">Edit Product</h1>
         </div>
 
-        {{-- FORM CONTAINER --}}
-        <div class="bg-white rounded-[4rem] border-[6px] border-primary shadow-2xl p-8 md:p-12 mb-20 relative">
-            <form method="POST" enctype="multipart/form-data" action="{{ route('admin.products.update', $product) }}" class="space-y-8">
-                @csrf
-                @method('PUT')
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
+            <a href="{{ route('admin.products.index') }}"
+                class="w-full sm:w-auto text-center px-6 py-2.5 rounded-lg border border-[#f3e7ed] text-sm font-bold hover:bg-gray-50 transition-colors">
+                Cancel
+            </a>
+            <button form="productForm" type="submit"
+                class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:opacity-90 shadow-lg shadow-primary/20 transition-all">
+                Save Changes
+            </button>
+        </div>
+    </div>
+</header>
 
-                <div class="flex flex-col lg:flex-row gap-10">
+<main class="p-4 sm:p-6 lg:p-8">
+    @if ($errors->any())
+        <div class="mb-6 bg-white border border-red-200 rounded-2xl p-4">
+            <p class="text-sm font-bold text-red-600 mb-2">Please fix the errors below:</p>
+            <ul class="text-sm text-red-600 list-disc pl-5 space-y-1">
+                @foreach ($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-                    {{-- LEFT: IMAGES --}}
-                    <div class="flex flex-col items-center gap-4 w-full lg:w-1/3">
-                        <label class="text-[#181113] text-base font-bold">Product Photos</label>
-                        <p class="text-primary/60 text-xs font-bold">Existing can be reordered · Check to delete</p>
+    <form id="productForm" method="POST" enctype="multipart/form-data" action="{{ route('admin.products.update', $product) }}">
+        @csrf
+        @method('PUT')
 
-                        {{-- Existing Images --}}
-                        @if ($product->images->count() > 0)
-                            <div id="existingImagesWrap" class="w-full">
-                                <div id="existingImagesSortable" class="flex gap-2 overflow-x-auto pb-2">
-                                    @foreach ($product->images as $img)
-                                        <div class="relative w-24 shrink-0" data-image-id="{{ $img->id }}">
-                                            <div class="bg-white p-2 rounded-2xl shadow-sm border-2 border-primary/10">
-                                                <div class="aspect-square rounded-xl overflow-hidden bg-gray-50">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-8">
+                <section class="form-section-card">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">info</span>
+                        Product Information
+                    </h3>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="input-label" for="product-name">Product Name</label>
+                            <input class="text-input" id="product-name" name="name" value="{{ old('name', $product->name) }}" placeholder="e.g. Velvet Rose Matte Lipstick" type="text" required />
+                        </div>
+
+                        <div>
+                            <label class="input-label" for="description">Description</label>
+                            <textarea class="text-input resize-none" id="description" name="description" placeholder="Provide a detailed description of the product..." rows="6" required>{{ old('description', $product->description) }}</textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section-card">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">image</span>
+                        Product Media
+                    </h3>
+
+                    <div class="space-y-6">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Existing images</p>
+
+                            @if ($product->images->count() > 0)
+                                <div id="existingImagesWrap">
+                                    <div id="existingImagesSortable" class="grid grid-cols-4 md:grid-cols-6 gap-4">
+                                        @foreach ($product->images as $img)
+                                            <div class="relative" data-image-id="{{ $img->id }}">
+                                                <div class="aspect-square rounded-lg border border-[#f3e7ed] bg-gray-50 overflow-hidden">
                                                     <img src="{{ asset('storage/' . ltrim($img->image, '/')) }}" alt="Product" class="w-full h-full object-cover" />
                                                 </div>
                                                 <div class="mt-2 flex items-center justify-between gap-2">
-                                                    <span class="drag-handle cursor-grab text-primary/60" title="Drag to reorder">
+                                                    <span class="drag-handle cursor-grab text-gray-400 hover:text-primary" title="Drag to reorder">
                                                         <span class="material-symbols-outlined text-[18px]">drag_indicator</span>
                                                     </span>
-                                                    <label class="inline-flex items-center gap-1.5 text-[11px] font-bold text-primary/70 cursor-pointer select-none">
-                                                        <input type="checkbox" name="delete_images[]" value="{{ $img->id }}" class="rounded border-primary/20 text-primary focus:ring-primary" />
+                                                    <label class="inline-flex items-center gap-2 text-[11px] font-bold text-gray-600 cursor-pointer select-none">
+                                                        <input type="checkbox" name="delete_images[]" value="{{ $img->id }}" class="rounded border-[#f3e7ed] text-primary focus:ring-primary" />
                                                         Delete
                                                     </label>
                                                 </div>
                                             </div>
-                                        </div>
-                                    @endforeach
+                                        @endforeach
+                                    </div>
+
+                                    <div id="imageOrderInputs" class="hidden">
+                                        @foreach ($product->images as $img)
+                                            <input type="hidden" name="image_order[]" value="{{ $img->id }}">
+                                        @endforeach
+                                    </div>
                                 </div>
-
-                                <div id="imageOrderInputs" class="hidden">
-                                    @foreach ($product->images as $img)
-                                        <input type="hidden" name="image_order[]" value="{{ $img->id }}">
-                                    @endforeach
-                                </div>
-                            </div>
-                        @else
-                            <p class="w-full text-center text-primary/50 text-xs font-bold">No existing images yet</p>
-                        @endif
-
-                        <hr class="w-full border-primary/10 border-2 border-dashed rounded-full my-2">
-
-                        <p class="text-primary/60 text-xs font-bold">Upload more · Drag to reorder</p>
-
-                        {{-- Upload New Images Box --}}
-                        <div class="relative w-full aspect-square max-w-[280px]">
-                            <div class="w-full h-full border-8 border-pink-200 rounded-[2.5rem] bg-pink-50 flex flex-col items-center justify-center relative cursor-pointer hover:bg-pink-100 transition-colors overflow-hidden group">
-                                <div class="absolute inset-4 border-4 border-dashed border-primary/20 rounded-[1.5rem] flex flex-col items-center justify-center pointer-events-none">
-                                    <span class="material-symbols-outlined text-primary text-6xl mb-2" style="font-variation-settings: 'FILL' 1">add_a_photo</span>
-                                    <span class="text-primary font-bold text-xs uppercase tracking-wider text-center px-4">Click to Upload Images</span>
-                                    <span class="text-primary/40 text-[10px] mt-1">(Max 5MB)</span>
-                                </div>
-                                <input id="newImagesInput" type="file" name="images[]" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                            </div>
+                            @else
+                                <p class="text-sm text-gray-500">No existing images yet.</p>
+                            @endif
                         </div>
 
-                        <div id="newImagesPreviewWrap" class="w-full mt-2 hidden">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-[11px] font-bold text-primary/60">New uploads</span>
-                                <span class="text-[11px] font-bold text-primary/40">Drag to reorder</span>
+                        <div class="border-t border-[#f3e7ed] pt-6">
+                            <p class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Add new images</p>
+                            <label for="newImagesInput"
+                                class="block border-2 border-dashed border-[#f3e7ed] rounded-xl p-12 text-center hover:border-primary/50 transition-colors cursor-pointer group bg-[#fcfaff]">
+                                <span class="material-symbols-outlined text-5xl text-gray-300 group-hover:text-primary transition-colors mb-4">upload_file</span>
+                                <p class="text-sm font-bold mb-1">Drag and drop product images here</p>
+                                <p class="text-xs text-gray-500 mb-6">Support JPEG, PNG, WEBP (Max 5MB)</p>
+                                <span class="inline-flex px-6 py-2 bg-white border border-[#f3e7ed] rounded-lg text-xs font-bold shadow-sm">Select Files</span>
+                                <input id="newImagesInput" type="file" name="images[]" multiple accept="image/*" class="hidden" />
+                            </label>
+
+                            <div id="newImagesPreviewWrap" class="mt-6 hidden">
+                                <div class="flex items-center justify-between mb-3">
+                                    <p class="text-xs font-bold uppercase tracking-widest text-gray-500">New uploads</p>
+                                    <p class="text-xs font-bold text-primary/70">Drag to reorder</p>
+                                </div>
+                                <div id="newImagesPreview" class="grid grid-cols-4 md:grid-cols-6 gap-4"></div>
                             </div>
-                            <div id="newImagesPreview" class="flex gap-2 overflow-x-auto pb-2"></div>
                         </div>
                     </div>
+                </section>
 
-                    {{-- RIGHT: INPUTS --}}
-                    <div class="flex-1 space-y-6">
-
-                        {{-- Product Name --}}
-                        <div class="flex flex-col gap-2">
-                            <label class="flex items-center gap-2 text-[#181113] text-base font-bold pl-2">
-                                Product Name
-                                <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">favorite</span>
-                            </label>
-                            <input name="name" value="{{ $product->name }}" class="w-full rounded-full border-2 border-primary/10 bg-primary/5 focus:border-primary focus:ring-0 h-14 px-6 text-[#181113] placeholder:text-primary/30 font-medium transition-all" placeholder="Strawberry Sparkle Cookie" type="text" required />
-                        </div>
-
-                        {{-- Category Select --}}
-                        <div class="flex flex-col gap-2">
-                            <label class="flex items-center gap-2 text-[#181113] text-base font-bold pl-2">
-                                Category
-                                <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">category</span>
-                            </label>
-                            <div class="relative">
-                                <select name="category_id" class="w-full rounded-full border-2 border-primary/10 bg-primary/5 focus:border-primary focus:ring-0 h-14 px-6 text-[#181113] font-medium appearance-none cursor-pointer" required>
-                                    @foreach ($categories as $c)
-                                        <option value="{{ $c->id }}" @selected($product->category_id == $c->id)>{{ $c->name }}</option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-primary">
-                                    <span class="material-symbols-outlined">expand_more</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Description --}}
-                        <div class="flex flex-col gap-2">
-                            <label class="flex items-center gap-2 text-[#181113] text-base font-bold pl-2">
-                                Description
-                                <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">edit_note</span>
-                            </label>
-                            <textarea name="description" class="w-full rounded-[2rem] border-2 border-primary/10 bg-primary/5 focus:border-primary focus:ring-0 min-h-[120px] p-6 text-[#181113] placeholder:text-primary/30 font-medium resize-none" placeholder="Describe how delicious this snack is...">{{ $product->description }}</textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <hr class="border-primary/10 border-2 border-dashed rounded-full my-8">
-
-                {{-- VARIANTS --}}
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center px-2">
-                        <h3 class="text-[#181113] text-xl font-black">Flavor & Variants</h3>
-                        <button type="button" onclick="addVariant()" class="px-4 py-2 rounded-full bg-secondary/20 text-primary text-xs font-bold uppercase hover:bg-secondary/40 transition-colors flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm">add_circle</span> Add Variant
+                <section class="form-section-card">
+                    <div class="flex items-center justify-between gap-4 mb-6">
+                        <h3 class="text-lg font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">inventory_2</span>
+                            Variants
+                        </h3>
+                        <button type="button" onclick="addVariant()"
+                            class="px-4 py-2 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/15 transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">add</span>
+                            Add Variant
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-12 gap-4 px-4 text-primary/60 text-xs font-bold uppercase tracking-wider mb-2">
-                        <div class="col-span-3">Details (Color/Flavor)</div>
-                        <div class="col-span-3">Size</div>
-                        <div class="col-span-3">Price</div>
-                        <div class="col-span-2">Stock</div>
-                        <div class="col-span-1 text-center"></div>
+                    <div class="hidden md:grid md:grid-cols-12 gap-4 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                        <div class="md:col-span-3">Color</div>
+                        <div class="md:col-span-3">Size</div>
+                        <div class="md:col-span-3">Price (Rp)</div>
+                        <div class="md:col-span-2">Stock</div>
+                        <div class="md:col-span-1"></div>
                     </div>
 
-                    <div id="variant-wrapper" class="space-y-3">
+                    <div id="variant-wrapper" class="space-y-3 mt-4">
                         @foreach ($product->variants as $i => $v)
-                            <div class="grid grid-cols-12 gap-3 variant-item group">
-                                <div class="col-span-3">
-                                    <input name="variants[{{ $i }}][color]" value="{{ $v->color }}" placeholder="Red / Strawberry" class="w-full rounded-xl border-2 border-primary/10 bg-primary/5 focus:border-primary focus:ring-0 py-3 px-4 text-sm font-medium placeholder:text-primary/30" />
+                            <div class="variant-item grid grid-cols-1 md:grid-cols-12 gap-3">
+                                <div class="md:col-span-3">
+                                    <label class="input-label md:hidden">Color</label>
+                                    <input name="variants[{{ $i }}][color]" value="{{ old('variants.' . $i . '.color', $v->color) }}" placeholder="e.g. Rose" class="text-input" />
                                 </div>
-                                <div class="col-span-3">
-                                    <input name="variants[{{ $i }}][size]" value="{{ $v->size }}" placeholder="Box of 6" class="w-full rounded-xl border-2 border-primary/10 bg-primary/5 focus:border-primary focus:ring-0 py-3 px-4 text-sm font-medium placeholder:text-primary/30" />
+                                <div class="md:col-span-3">
+                                    <label class="input-label md:hidden">Size</label>
+                                    <input name="variants[{{ $i }}][size]" value="{{ old('variants.' . $i . '.size', $v->size) }}" placeholder="e.g. 10ml" class="text-input" />
                                 </div>
-                                <div class="col-span-3">
-                                    <input name="variants[{{ $i }}][price]" value="{{ $v->price }}" type="number" step="0.01" placeholder="0.00" class="w-full rounded-xl border-2 border-primary/10 bg-primary/5 focus:border-primary focus:ring-0 py-3 px-4 text-sm font-medium placeholder:text-primary/30" />
+                                <div class="md:col-span-3">
+                                    <label class="input-label md:hidden">Price (Rp)</label>
+                                    <input name="variants[{{ $i }}][price]" value="{{ old('variants.' . $i . '.price', $v->price) }}" type="number" step="1" min="0" placeholder="0" class="text-input" required />
                                 </div>
-                                <div class="col-span-2">
-                                    <input name="variants[{{ $i }}][stock]" value="{{ $v->stock }}" type="number" placeholder="0" class="w-full rounded-xl border-2 border-primary/10 bg-primary/5 focus:border-primary focus:ring-0 py-3 px-4 text-sm font-medium placeholder:text-primary/30" />
+                                <div class="md:col-span-2">
+                                    <label class="input-label md:hidden">Stock</label>
+                                    <input name="variants[{{ $i }}][stock]" value="{{ old('variants.' . $i . '.stock', $v->stock) }}" type="number" step="1" min="0" placeholder="0" class="text-input" required />
                                 </div>
-                                <div class="col-span-1 flex justify-center items-center">
-                                    <button type="button" onclick="removeVariant(this)" class="w-8 h-8 rounded-full bg-red-100 text-red-400 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors" aria-label="Remove variant">
-                                        <span class="material-symbols-outlined text-lg">close</span>
+                                <div class="md:col-span-1 flex md:justify-end md:items-end">
+                                    <button type="button" onclick="removeVariant(this)" aria-label="Remove variant"
+                                        class="h-10 w-10 rounded-lg border border-[#f3e7ed] hover:border-red-200 hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors flex items-center justify-center">
+                                        <span class="material-symbols-outlined">close</span>
                                     </button>
                                 </div>
                             </div>
                         @endforeach
                     </div>
-                </div>
+                </section>
+            </div>
 
-                {{-- SUBMIT BUTTON --}}
-                <div class="flex flex-col items-center pt-8">
-                    <button class="group relative flex items-center justify-center w-52 h-52 transition-transform duration-300 hover:scale-110 active:scale-95" type="submit">
-                        <div class="absolute inset-0 glossy-effect heart-button"></div>
-                        <div class="relative z-10 flex flex-col items-center text-white">
-                            <span class="material-symbols-outlined text-4xl mb-1">save</span>
-                            <span class="font-black text-xl text-center px-4 leading-tight">SAVE<br/>CHANGES</span>
+            <div class="space-y-8">
+                <section class="form-section-card">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">payments</span>
+                        Pricing
+                    </h3>
+                    <p class="text-sm text-gray-600">Pricing is managed per variant. Set the price in the Variants section.</p>
+                </section>
+
+                <section class="form-section-card">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">category</span>
+                        Organization
+                    </h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="input-label" for="category">Category</label>
+                            <select class="text-input appearance-none" id="category" name="category_id" required>
+                                @foreach ($categories as $c)
+                                    <option value="{{ $c->id }}" @selected(old('category_id', $product->category_id) == $c->id)>{{ $c->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                    </button>
-                </div>
-            </form>
+                    </div>
+                </section>
+            </div>
         </div>
-    </div>
+
+        <div class="mt-12 pt-8 border-t border-[#f3e7ed] flex justify-end gap-4">
+            <a href="{{ route('admin.products.index') }}"
+                class="px-6 py-2.5 rounded-lg border border-[#f3e7ed] text-sm font-bold hover:bg-gray-50 transition-colors">
+                Cancel
+            </a>
+            <button type="submit"
+                class="px-8 py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:opacity-90 shadow-lg shadow-primary/20">
+                Save Changes
+            </button>
+        </div>
+    </form>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -301,20 +330,18 @@
             selectedFiles.forEach((file, idx) => {
                 const url = URL.createObjectURL(file);
                 const el = document.createElement('div');
-                el.className = 'relative w-24 shrink-0';
+                el.className = 'relative';
                 el.innerHTML = `
-                    <div class="bg-white p-2 rounded-2xl shadow-sm border-2 border-primary/10">
-                        <div class="aspect-square rounded-xl overflow-hidden bg-gray-50">
-                            <img src="${url}" alt="${file.name}" class="w-full h-full object-cover" />
-                        </div>
-                        <div class="mt-2 flex items-center justify-between gap-2">
-                            <span class="drag-handle cursor-grab text-primary/60">
-                                <span class="material-symbols-outlined text-[18px]">drag_indicator</span>
-                            </span>
-                            <button type="button" class="remove-image h-7 w-7 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors" aria-label="Remove">
-                                <span class="material-symbols-outlined text-[18px]">close</span>
-                            </button>
-                        </div>
+                    <div class="aspect-square rounded-lg border border-[#f3e7ed] bg-gray-50 overflow-hidden">
+                        <img src="${url}" alt="${file.name}" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="mt-2 flex items-center justify-between gap-2">
+                        <span class="drag-handle cursor-grab text-gray-400 hover:text-primary" title="Drag to reorder">
+                            <span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+                        </span>
+                        <button type="button" class="remove-image h-8 w-8 rounded-lg border border-[#f3e7ed] hover:border-red-200 hover:bg-red-50 text-gray-400 hover:text-red-600 flex items-center justify-center transition-colors" aria-label="Remove">
+                            <span class="material-symbols-outlined text-[18px]">close</span>
+                        </button>
                     </div>
                 `;
                 el.querySelector('.remove-image')?.addEventListener('click', () => {

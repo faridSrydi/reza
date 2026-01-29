@@ -13,7 +13,7 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::latest()->get();
+        $categories = Category::query()->withCount('products')->latest()->get();
         return view('admin.category.index', compact('categories'));
     }
 
@@ -141,6 +141,6 @@ class CategoryController extends Controller
 
         return redirect()
             ->route('admin.categories.index')
-            ->with('success', 'Category berhasil dihapus');
+            ->with('toast', ['type' => 'success', 'message' => 'Category deleted successfully!']);
     }
 }

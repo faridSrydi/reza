@@ -1,145 +1,41 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html class="light overflow-x-hidden touch-pan-y" lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>MiniMOO - @yield('title', 'Admin')</title>
+    <title>Luxe Admin - @yield('title', 'Admin')</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;display=swap"
         rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
     <style type="text/tailwindcss">
-        :root {
-            --primary: #f42559;
-            --secondary: #ff8fb1;
-            --bg-light: #fff5f7;
-            --bubble-pink: #ffe4e9;
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-light);
         }
 
-        .donut-shape {
-            border-radius: 50%;
-            position: relative;
-            box-shadow: 0 10px 25px -5px rgba(244, 37, 89, 0.2);
+        .serif-text {
+            font-family: 'Playfair Display', serif;
         }
 
-        .donut-shape::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 30%;
-            height: 30%;
-            background-color: var(--bg-light);
-            border-radius: 50%;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .sidebar-bubble {
-            border-radius: 9999px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sidebar-bubble:hover,
-        .sidebar-bubble.active {
-            background-color: var(--primary);
-            color: white;
-            transform: translateX(8px);
-        }
-
-        .admin-shell.sidebar-collapsed > .admin-sidebar {
-            width: 5.5rem;
-            padding: 1rem !important;
-        }
-
-        .admin-sidebar {
-            transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1), padding 220ms cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .admin-shell.sidebar-hidden > .admin-sidebar {
-            display: none;
-            width: 0 !important;
-            padding: 0 !important;
-            border-width: 0 !important;
-            overflow: hidden;
-        }
-
-        .admin-shell.sidebar-hidden > .admin-sidebar * {
-            pointer-events: none;
-        }
-
-        .admin-shell.sidebar-collapsed > .admin-sidebar .admin-sidebar-label {
+        .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
 
-        .admin-shell.sidebar-collapsed > .admin-sidebar .sidebar-bubble {
-            justify-content: center;
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
-            gap: 0;
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
-        .admin-shell.sidebar-collapsed > .admin-sidebar .sidebar-bubble:hover,
-        .admin-shell.sidebar-collapsed > .admin-sidebar .sidebar-bubble.active {
-            transform: none;
-        }
-
-        .lollipop-border {
-            border: 4px dashed var(--primary);
-            padding: 4px;
-            animation: rotate-border 20s linear infinite;
-        }
-
-        @keyframes rotate-border {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .heart-point {
-            clip-path: path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');
-        }
-
-        .material-symbols-outlined.crumb-heart {
-            font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
-        }
-
-        @keyframes toast-in {
-            from {
-                transform: translateY(10px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .live-search-spinner {
-            width: 18px;
-            height: 18px;
-            border-radius: 9999px;
-            border: 2px solid rgba(244, 37, 89, 0.25);
-            border-top-color: rgba(244, 37, 89, 0.95);
-            animation: spin 700ms linear infinite;
+        .chart-bar {
+            @apply bg-primary/20 hover:bg-primary transition-colors duration-300;
         }
     </style>
     <script id="tailwind-config">
@@ -148,9 +44,9 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#f42559",
-                        "secondary": "#ff8fb1",
-                        "accent": "#ffd1dc"
+                        "primary": "#ee2b8c",
+                        "background-light": "#f3f4f6",
+                        "sidebar-dark": "#1b0d14",
                     }
                 }
             }
@@ -159,26 +55,26 @@
     @stack('styles')
 </head>
 
-<body class="min-h-screen text-[#181113]">
-    <div id="adminShell" class="admin-shell min-h-screen flex flex-col md:flex-row">
+<body class="bg-background-light text-[#1b0d14] min-h-screen flex overflow-x-hidden touch-pan-y">
+    <div id="adminShell" class="admin-shell min-h-screen flex flex-col lg:flex-row flex-1 w-full overflow-x-hidden">
         <!-- Desktop Sidebar -->
-        <aside class="admin-sidebar hidden md:flex w-72 bg-white border-r-4 border-primary/10 flex-col p-6 gap-6 md:sticky md:top-0 md:h-screen md:overflow-y-auto md:self-start">
+        <aside class="admin-sidebar hidden lg:flex w-64 bg-sidebar-dark text-white flex-col fixed inset-y-0 left-0 z-50 h-screen overflow-y-auto no-scrollbar">
             @include('layouts.partials.admin_sidebar', ['isMobile' => false])
         </aside>
 
         <!-- Mobile Topbar -->
-        <header class="md:hidden sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-primary/10">
+        <header class="lg:hidden sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 w-full">
             <div class="px-4 py-3 flex items-center justify-between gap-3">
                 <button id="adminSidebarButton" type="button"
-                    class="h-10 w-10 rounded-xl border-2 border-primary/15 bg-white/70 text-primary flex items-center justify-center"
+                    class="h-10 w-10 rounded-lg border border-gray-200 bg-white/70 text-gray-500 flex items-center justify-center"
                     aria-controls="adminSidebarOverlay" aria-expanded="false">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
                 <a class="flex items-center gap-2" href="{{ route('admin.dashboard') }}">
-                    <div class="bg-primary p-2 rounded-2xl rotate-3">
-                        <span class="material-symbols-outlined text-white text-xl font-bold">icecream</span>
+                    <div class="text-primary">
+                        <span class="material-symbols-outlined text-3xl">auto_fix_high</span>
                     </div>
-                    <span class="text-primary font-black tracking-tighter italic">MiniMOO</span>
+                    <span class="text-[#1b0d14] text-xl font-bold tracking-tighter serif-text">LUXE</span>
                 </a>
                 <div class="h-10 w-10 rounded-xl bg-primary/5 border-2 border-primary/10 flex items-center justify-center text-primary">
                     <span class="material-symbols-outlined text-[20px]">notifications</span>
@@ -187,35 +83,25 @@
         </header>
 
         <!-- Mobile Sidebar Overlay -->
-        <div id="adminSidebarOverlay" class="md:hidden fixed inset-0 z-50 hidden">
-            <div class="absolute inset-0 bg-black/40" data-admin-close></div>
-            <aside class="admin-sidebar absolute inset-y-0 left-0 w-[300px] max-w-[85vw] bg-white border-r-4 border-primary/10 p-6 flex flex-col gap-6">
+        <div id="adminSidebarOverlay" class="lg:hidden fixed inset-0 z-50 hidden h-[100dvh] overscroll-contain" aria-hidden="true">
+            <div id="adminSidebarBackdrop" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-200" data-admin-close></div>
+            <aside id="adminSidebarPanel" class="admin-sidebar absolute inset-y-0 left-0 w-[300px] max-w-[85vw] bg-sidebar-dark text-white flex flex-col h-full overflow-y-auto no-scrollbar -translate-x-full transform transition-transform duration-200">
                 @include('layouts.partials.admin_sidebar', ['isMobile' => true])
             </aside>
         </div>
 
         <!-- Page Content -->
-        <div class="flex-1 min-w-0 flex flex-col">
-            <button id="adminSidebarReopenButton" type="button"
-                class="hidden fixed top-4 left-4 z-40 h-10 w-10 rounded-xl border-2 border-primary/15 bg-white/90 backdrop-blur text-primary items-center justify-center shadow"
-                aria-label="Open sidebar">
-                <span class="material-symbols-outlined">menu_open</span>
-            </button>
+        <div class="flex-1 min-w-0 flex flex-col w-full lg:pl-64">
 
             @yield('content')
 
             <!-- Toast Host -->
             <div id="toastHost" class="fixed right-4 top-4 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
 
-            <footer class="bg-white py-6 px-4 sm:px-10 border-t border-primary/10 mt-auto">
-                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                    <div class="flex items-center gap-2 text-primary opacity-50">
-                        <span class="material-symbols-outlined">bakery_dining</span>
-                        <span class="font-bold">{{ config('app.name', 'MiniMOO') }} Admin Panel © {{ now()->year }}</span>
-                    </div>
-                    <div class="flex flex-wrap gap-6 text-primary/60 text-sm font-semibold">
-                        <a class="hover:text-primary" href="{{ route('home') }}">Back to Site</a>
-                    </div>
+            <footer class="px-4 sm:px-6 lg:px-8 py-6 text-xs text-gray-500 mt-auto">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <span>© {{ now()->year }} {{ config('app.name', 'LUXE') }}</span>
+                    <a class="hover:text-primary" href="{{ route('home') }}">Back to Site</a>
                 </div>
             </footer>
         </div>
@@ -225,98 +111,83 @@
         (function () {
             var btn = document.getElementById('adminSidebarButton');
             var overlay = document.getElementById('adminSidebarOverlay');
-            var shell = document.getElementById('adminShell');
-            var desktopToggle = document.getElementById('adminDesktopCollapseButton');
-            var desktopReopen = document.getElementById('adminSidebarReopenButton');
+            var backdrop = document.getElementById('adminSidebarBackdrop');
+            var panel = document.getElementById('adminSidebarPanel');
+            var closeTimer = null;
 
-            var LS_KEY = 'admin_sidebar_collapsed_v1';
-
-            function setDesktopState(nextState) {
-                if (!shell) return;
-                // nextState: 'expanded' | 'collapsed' | 'hidden'
-                shell.classList.toggle('sidebar-hidden', nextState === 'hidden');
-                shell.classList.toggle('sidebar-collapsed', nextState === 'collapsed');
-
-                if (desktopReopen) {
-                    if (nextState === 'hidden') {
-                        desktopReopen.classList.remove('hidden');
-                        desktopReopen.classList.add('flex');
-                    } else {
-                        desktopReopen.classList.add('hidden');
-                        desktopReopen.classList.remove('flex');
-                    }
-                }
-
-                if (desktopToggle) {
-                    var icon = desktopToggle.querySelector('.material-symbols-outlined');
-                    if (icon) {
-                        icon.textContent = nextState === 'hidden' ? 'dock_to_left' : 'dock_to_right';
-                    }
-                }
-
-                try {
-                    var stored = nextState === 'collapsed' ? '1' : (nextState === 'hidden' ? '2' : '0');
-                    localStorage.setItem(LS_KEY, stored);
-                } catch (e) {}
-            }
-
-            function applyDesktopState() {
-                if (!shell) return;
-                var raw = '0';
-                try {
-                    raw = localStorage.getItem(LS_KEY) || '0';
-                } catch (e) {
-                    raw = '0';
-                }
-
-                if (raw === '2') return setDesktopState('hidden');
-                // Legacy: if previously stored as "collapsed", treat as expanded to avoid odd desktop layout.
-                if (raw === '1') return setDesktopState('expanded');
-                return setDesktopState('expanded');
-            }
+            // Safety: ensure scroll isn't stuck after hot reload / partial navigation
+            document.body.style.overflowY = '';
+            document.documentElement.style.overflowY = '';
 
             function open() {
                 if (!overlay) return;
                 overlay.classList.remove('hidden');
                 if (btn) btn.setAttribute('aria-expanded', 'true');
-                document.body.style.overflow = 'hidden';
+                overlay.setAttribute('aria-hidden', 'false');
+                document.body.style.overflowY = 'hidden';
+                document.documentElement.style.overflowY = 'hidden';
+
+                if (closeTimer) {
+                    clearTimeout(closeTimer);
+                    closeTimer = null;
+                }
+
+                requestAnimationFrame(function () {
+                    if (backdrop) backdrop.classList.add('opacity-100');
+                    if (panel) {
+                        panel.classList.remove('-translate-x-full');
+                        panel.classList.add('translate-x-0');
+                    }
+                });
             }
 
             function close() {
                 if (!overlay) return;
-                overlay.classList.add('hidden');
                 if (btn) btn.setAttribute('aria-expanded', 'false');
-                document.body.style.overflow = '';
+                overlay.setAttribute('aria-hidden', 'true');
+                document.body.style.overflowY = '';
+                document.documentElement.style.overflowY = '';
+
+                if (backdrop) backdrop.classList.remove('opacity-100');
+                if (panel) {
+                    panel.classList.add('-translate-x-full');
+                    panel.classList.remove('translate-x-0');
+                }
+
+                if (closeTimer) clearTimeout(closeTimer);
+                closeTimer = setTimeout(function () {
+                    overlay.classList.add('hidden');
+                }, 220);
+            }
+
+            function wireOverlayCloseTargets() {
+                if (!overlay) return;
+
+                var closeTargets = overlay.querySelectorAll('[data-admin-close]');
+                closeTargets.forEach(function (el) {
+                    el.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        close();
+                    });
+                });
+
+                var links = overlay.querySelectorAll('a[href]');
+                links.forEach(function (a) {
+                    a.addEventListener('click', function () {
+                        close();
+                    });
+                });
             }
 
             if (btn && overlay) {
+                wireOverlayCloseTargets();
                 btn.addEventListener('click', function () {
                     var isHidden = overlay.classList.contains('hidden');
                     if (isHidden) open();
                     else close();
                 });
-                overlay.addEventListener('click', function (e) {
-                    if (e.target && e.target.closest && e.target.closest('[data-admin-close]')) close();
-                });
                 document.addEventListener('keydown', function (e) {
                     if (e.key === 'Escape') close();
-                });
-            }
-
-            applyDesktopState();
-
-            if (desktopToggle && shell) {
-                desktopToggle.addEventListener('click', function () {
-                    // Toggle: expanded <-> hidden (user requested full close)
-                    var isHidden = shell.classList.contains('sidebar-hidden');
-                    if (isHidden) return setDesktopState('expanded');
-                    return setDesktopState('hidden');
-                });
-            }
-
-            if (desktopReopen && shell) {
-                desktopReopen.addEventListener('click', function () {
-                    setDesktopState('expanded');
                 });
             }
         })();

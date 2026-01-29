@@ -24,7 +24,7 @@ class DashboardController extends Controller
             ->sum('qty');
 
         $recentOrders = Order::query()
-            ->with('user')
+            ->with(['user', 'items'])
             ->latest()
             ->take(6)
             ->get();

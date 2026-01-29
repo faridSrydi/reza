@@ -22,7 +22,9 @@ class CheckoutController extends Controller
     {
         $cart = session('cart', []);
         // Ambil alamat milik user yang sedang login (baik admin/user biasa)
-        $addresses = Address::where('user_id', Auth::id())->get();
+        $addresses = Auth::check()
+            ? Address::where('user_id', Auth::id())->get()
+            : collect();
 
         $recommendedProducts = collect();
 
@@ -70,41 +72,42 @@ class CheckoutController extends Controller
      */
     public function addToCart(Request $request)
     {
-        // 1. Validasi input
-        $request->validate([
-            'variant_id'   => 'required',
-            'product_name' => 'required',
-            'price'        => 'required|numeric',
-            'qty'          => 'required|integer|min:1',
+        $validated = $request->validate([
+            'variant_id' => 'required|integer|exists:product_variants,id',
+            'qty' => 'required|integer|min:1',
         ]);
 
         $cart = session('cart', []);
 
-        // 2. AMBIL GAMBAR DARI DATABASE
-        // Start dari Variant -> Product -> Images
-        $variant = ProductVariant::with('product.images')->find($request->variant_id);
+        // Ambil Variant + Product + Images, supaya nama/price/image konsisten (tidak dari request)
+        $variant = ProductVariant::with('product.images')->findOrFail($validated['variant_id']);
 
-        $productImage = null;
-
-        // Cek apakah rantai relasinya lengkap & ada gambarnya
-        if ($variant && $variant->product && $variant->product->images->isNotEmpty()) {
-            // Ambil path gambar pertama
-            $productImage = $variant->product->images->first()->image;
+        if ((int) $variant->stock <= 0) {
+            return back()->with('error', 'Stok produk habis.');
         }
 
-        // 3. MASUKKAN KE KERANJANG
-        if (isset($cart[$request->variant_id])) {
-            // Jika produk sudah ada, tambah qty DAN update gambar (biar gambar muncul)
-            $cart[$request->variant_id]['qty'] += $request->qty;
-            $cart[$request->variant_id]['image'] = $productImage;
+        $qtyToAdd = min((int) $validated['qty'], (int) $variant->stock);
+
+        $productName = (string) ($variant->product?->name ?? 'Item');
+        $price = (int) $variant->price;
+
+        $productImage = $variant->product?->images?->first()?->image;
+
+        if (isset($cart[$variant->id])) {
+            $cart[$variant->id]['qty'] = min(
+                (int) $variant->stock,
+                (int) ($cart[$variant->id]['qty'] ?? 0) + $qtyToAdd
+            );
+            $cart[$variant->id]['image'] = $productImage;
+            $cart[$variant->id]['price'] = $price;
+            $cart[$variant->id]['product_name'] = $productName;
         } else {
-            // Jika belum ada, masukkan data baru BESERTA IMAGE
-            $cart[$request->variant_id] = [
-                'variant_id'   => $request->variant_id,
-                'product_name' => $request->product_name,
-                'price'        => $request->price,
-                'qty'          => $request->qty,
-                'image'        => $productImage // <--- KUNCI SUPAYA GAMBAR MUNCUL
+            $cart[$variant->id] = [
+                'variant_id' => $variant->id,
+                'product_name' => $productName,
+                'price' => $price,
+                'qty' => $qtyToAdd,
+                'image' => $productImage,
             ];
         }
 
@@ -118,10 +121,15 @@ class CheckoutController extends Controller
      */
     public function updateQty(Request $request)
     {
+        $validated = $request->validate([
+            'variant_id' => 'required|integer',
+            'qty' => 'required|integer|min:1',
+        ]);
+
         $cart = session('cart', []);
 
-        if (isset($cart[$request->variant_id])) {
-            $cart[$request->variant_id]['qty'] = max(1, $request->qty);
+        if (isset($cart[$validated['variant_id']])) {
+            $cart[$validated['variant_id']]['qty'] = (int) $validated['qty'];
         }
 
         session(['cart' => $cart]);

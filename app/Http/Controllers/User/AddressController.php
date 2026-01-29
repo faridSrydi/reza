@@ -32,7 +32,7 @@ class AddressController extends Controller
 
         Address::create($request->all() + ['user_id' => Auth::id()]);
 
-        return redirect()->route('user.addresses.index')->with('success', 'Alamat berhasil ditambahkan');
+        return redirect()->route('addresses.index')->with('success', 'Alamat berhasil ditambahkan');
     }
 
     public function edit(Address $address)
@@ -48,7 +48,7 @@ class AddressController extends Controller
         if ($address->user_id !== Auth::id()) abort(403);
 
         $address->update($request->all());
-        return redirect()->route('user.addresses.index')->with('success', 'Alamat berhasil diperbarui');
+        return redirect()->route('addresses.index')->with('success', 'Alamat berhasil diperbarui');
     }
 
     public function destroy(Address $address)

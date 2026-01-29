@@ -38,7 +38,8 @@ class HomeController extends Controller
                 });
             })
             ->latest()
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
 
         return view('home.index', compact('products', 'categories', 'newestProducts', 'wishlistProductIds'));
     }
